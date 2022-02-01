@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="4c94cf07-50d8-4929-b91a-243ad8d1843b" name="OSU Flip2">
+        <fileTransfer rootFolder="/nfs/stak/users/ladae" accessType="SFTP" host="flip2.engr.oregonstate.edu" port="22" sshConfigId="9202b712-d167-432f-a7dc-6a1bfa1ac21b" sshConfig="ladae@flip2.engr.oregonstate.edu:22" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="7fed0959-3dee-490b-bec1-2f735f77c51e" name="OSU Flip3">
+        <fileTransfer rootFolder="/nfs/stak/users/ladae" accessType="SFTP" host="flip3.engr.oregonstate.edu" port="22" sshConfigId="8aaa160f-dfbf-42f6-af2f-e6553cfb9550" sshConfig="ladae@flip3.engr.oregonstate.edu:22" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

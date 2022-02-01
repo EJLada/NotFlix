@@ -1,0 +1,25 @@
+{
+  "name": "notflix",
+  "version": "1.0.0",
+  "description": "Database backend for anonline streaming platform - final project for OSU CS 340, Intro to Databases.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EJLada/NotFlix.git"
+  },
+  "author": "Edward Lada and Prasanna Thapa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EJLada/NotFlix/issues"
+  },
+  "homepage": "https://github.com/EJLada/NotFlix#readme",
+  "dependencies": {
+    "express": "^4.17.2",
+    "mysql": "^2.18.1",
+    "pm2": "^5.1.2"
+  },
+  "type": "module"
+}
