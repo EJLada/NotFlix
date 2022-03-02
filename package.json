@@ -1,10 +1,11 @@
 {
   "name": "notflix",
   "version": "1.0.0",
-  "description": "Database backend for anonline streaming platform - final project for OSU CS 340, Intro to Databases.",
-  "main": "app.js",
+  "description": "Database backend for an online streaming platform - final project for OSU CS 340, Intro to Databases.",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pm2 start server.js --watch --ignore-watch='node-modules'"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/EJLada/NotFlix#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.17.2",
     "mysql": "^2.18.1",
     "pm2": "^5.1.2"
