@@ -9,7 +9,7 @@ const app = express();
 app.enable('trust proxy');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(express.static("./app/views/index.html"));
+app.use(express.static("app/views"));
 
 // Database
 import mysql from 'mysql';
