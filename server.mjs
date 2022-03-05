@@ -153,6 +153,6 @@ app.get('/contentTypes', function(req, res) {
 /*
     LISTENER
 */
-app.listen(8000, function(){
+app.listen(process.env.PORT || 8000, function(){
     console.log('Express started; press Ctrl-C to terminate.');
 });
