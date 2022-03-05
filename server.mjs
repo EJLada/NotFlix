@@ -6,6 +6,7 @@
 import express from 'express';
 const app = express();
 
+app.enable('trust proxy');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(express.static("./app/views/index.html"));
