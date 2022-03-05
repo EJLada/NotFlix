@@ -5,15 +5,16 @@
 // Express
 import express from 'express';
 const app = express();
-const PORT = 8045;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(express.static("/app/views"));
+app.use(express.static("./app/views/index.html"));
 
 // Database
 import mysql from 'mysql';
 import * as db from './database/db-connector.mjs';
+
+
 
 // Functions
 
@@ -152,6 +153,6 @@ app.get('/contentTypes', function(req, res) {
 /*
     LISTENER
 */
-app.listen(PORT, function(){
-    console.log('Express started on http://localhost:' + PORT + '; press Ctrl-C to terminate.');
+app.listen(8000, function(){
+    console.log('Express started; press Ctrl-C to terminate.');
 });
