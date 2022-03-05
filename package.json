@@ -2,7 +2,7 @@
   "name": "notflix",
   "version": "1.0.0",
   "description": "Database backend for an online streaming platform - final project for OSU CS 340, Intro to Databases.",
-  "main": "server.js",
+  "main": "server.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pm2-runtime start ecosystem.config.js --env production"
@@ -22,6 +22,5 @@
     "express": "^4.17.2",
     "mysql": "^2.18.1",
     "pm2": "^5.1.2"
-  },
-  "type": "module"
+  }
 }
