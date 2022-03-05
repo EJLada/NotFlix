@@ -5,7 +5,7 @@
 // Express
 import express from 'express';
 const app = express();
-// const PORT = 8045;
+const PORT = 8045;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
@@ -13,8 +13,7 @@ app.use(express.static("/app/views"));
 
 // Database
 import mysql from 'mysql';
-let db = mysql.createConnection(process.env.JAWSDB_MARIA_URL);
-db.connect();
+import * as db from './database/db-connector.mjs';
 
 // Functions
 
@@ -53,7 +52,7 @@ app.get('/customers', function(req, res) {
     else getCustomers += ';';
 
     // Get data
-    db.query(getCustomers, function(err, results, fields){
+    db.pool.query(getCustomers, function(err, results, fields){
         // Send data
         res.send({customers: results});
     })
@@ -70,7 +69,7 @@ app.get('/series', function(req, res) {
     // Otherwise return all
     else getSeries += ';';
 
-    db.query(getSeries, function(err, results, fields){
+    db.pool.query(getSeries, function(err, results, fields){
         // Send data
         res.send({series: results});
     })
@@ -88,7 +87,7 @@ app.get('/episodes', function(req, res) {
     // Otherwise return all
     else getEpisodes += ';';
 
-    db.query(getEpisodes, function(err, results, fields){
+    db.pool.query(getEpisodes, function(err, results, fields){
         // Send data
         res.send({episodes: results});
     })
@@ -105,7 +104,7 @@ app.get('/genres', function(req, res) {
     // Otherwise return all
     else getGenres += ';';
 
-    db.query(getGenres, function(err, results, fields){
+    db.pool.query(getGenres, function(err, results, fields){
         res.send({genres: results});
     })
 });
@@ -125,7 +124,7 @@ app.get('/subscriptions', function(req, res) {
     }
     else getSubscriptions += ';';
 
-    db.query(getSubscriptions, function(err, results, fields){
+    db.pool.query(getSubscriptions, function(err, results, fields){
         res.send({subscriptions: results});
     })
 });
@@ -142,7 +141,7 @@ app.get('/contentTypes', function(req, res) {
     }
     else getContentTypes += ';';
 
-    db.query(getContentTypes, function(err, results, fields){
+    db.pool.query(getContentTypes, function(err, results, fields){
         res.send({contentTypes: results});
     })
 });
