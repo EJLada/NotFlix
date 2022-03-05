@@ -4,10 +4,10 @@ import mysql from 'mysql';
 // Create a 'connection pool' with provided credentials
 let pool = mysql.createPool({
     connectionLimit : 10,
-    host : 'classmysql.engr.oregonstate.edu',
-    user : 'cs340_ladae',
-    password : '5111',
-    database : 'cs340_ladae'
+    host : 'uyu7j8yohcwo35j3.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+    user : 'ox7v05nnp3scqgwo',
+    password : 'pn7on91gnu7m9zq3',
+    database : 's5g2j1mi6kecpnrc'
 })
 
 // Export for use in the application
