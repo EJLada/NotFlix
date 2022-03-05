@@ -4,10 +4,11 @@
 // Express
 import express from 'express';
 const app = express();
-const PORT = 8045;
+// const PORT = 8045;
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(express.static("/app/views"));
 
 // Database
 import mysql from 'mysql';

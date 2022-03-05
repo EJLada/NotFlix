@@ -5,13 +5,13 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 start server.js --watch --ignore-watch='node-modules'"
+    "start": "pm2-runtime start ecosystem.config.js --env production"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/EJLada/NotFlix.git"
   },
-  "author": "Edward Lada and Prasanna Thapa",
+  "author": "Edward Lada, Prasanna Thapa, Louis Lin",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/EJLada/NotFlix/issues"
