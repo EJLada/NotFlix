@@ -5,6 +5,7 @@
 // Express
 import express from 'express';
 const app = express();
+const PORT = process.env.PORT || 8000;
 
 app.enable('trust proxy');
 app.use(express.json());
@@ -154,6 +155,6 @@ app.get('/contentTypes', function(req, res) {
 /*
     LISTENER
 */
-app.listen(process.env.PORT || 8000, function(){
+app.listen(PORT, function(){
     console.log('Express started; press Ctrl-C to terminate.');
 });
