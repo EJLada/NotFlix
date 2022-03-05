@@ -10,7 +10,10 @@ const PORT = process.env.PORT || 8000;
 app.enable('trust proxy');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
-app.use(express.static("app/views"));
+
+app.get('/', function(req, res) {
+    res.send("NotFlix Backend API running.");
+});
 
 // Database
 import mysql from 'mysql';
