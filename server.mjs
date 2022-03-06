@@ -65,17 +65,6 @@ app.post('/customers', function(req, res) {
         'VALUES (' + req.body.firstName + ', ' + req.body.lastName
         + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
 
-    try {
-        let results = db.query(addCustomer);
-        res.status(201);
-        res.send(HOME + '/customers/' + results[0]);
-    } catch (e) {
-        res.status(503);
-        res.send(e);
-    }
-
-
-    /*
     db.getConnection((err, instance) => {
         if (err) {
             res.status(503);
@@ -89,8 +78,6 @@ app.post('/customers', function(req, res) {
             res.send(HOME + '/customers/' + results);
         });
     });
-
-     */
 });
 
 // READ all or selected Customers
