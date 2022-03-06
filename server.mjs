@@ -12,11 +12,7 @@ app.enable('trust proxy');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.use(cors({
-    methods: 'GET,PUT,POST,PATCH,DELETE,OPTIONS',
-    optionsSuccessStatus: 200,
-    origin: 'https://web.engr.oregonstate.edu/~ladae'
-}));
+app.use(cors());
 app.options('*', cors());
 
 app.get('/', function(req, res) {
@@ -58,17 +54,16 @@ function queryBuilder(query, body) {
 // CREATE new Customer record
 app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
-    const body = JSON.parse(req.body);
     for (const _ in ['firstName', 'lastName', 'email']) {
-        if (!_ in Object.keys(body)) {
+        if (!_ in Object.keys(req.body)) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
     let addCustomer = 'INSERT INTO Customers (firstName, lastName, email) ' +
-        'VALUES (' + body.firstName + ', ' + body.lastName
-        + ', ' + body.email + '); SELECT LAST_INSERT_ID();';
+        'VALUES (' + req.body.firstName + ', ' + req.body.lastName
+        + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
 
     db.query(addCustomer, function(err, results) {
         if (err) {
