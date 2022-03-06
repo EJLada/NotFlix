@@ -68,7 +68,7 @@ app.post('/customers', function(req, res) {
     try {
         let results = db.query(addCustomer);
         res.status(201);
-        res.send(HOME + '/customers/' + results);
+        res.send(HOME + '/customers/' + results.customerID);
     } catch (e) {
         res.status(503);
         res.send(e);
