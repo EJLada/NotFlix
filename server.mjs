@@ -65,13 +65,13 @@ app.post('/customers', function(req, res) {
         'VALUES (' + req.body.firstName + ', ' + req.body.lastName
         + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
 
+
     db.getConnection((err, instance) => {
         if (err) {
             res.status(503);
             res.send('Bad connection to database');
         }
         instance.query(addCustomer, function(err, results){
-            instance.release();
             if (err) throw err;
             // Send data
             res.status(201);
