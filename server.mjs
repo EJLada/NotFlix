@@ -4,12 +4,20 @@
 
 // Express
 import express from 'express';
+import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 8000;
 
 app.enable('trust proxy');
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+app.use(cors({
+    methods: 'GET,PUT,POST,PATCH,DELETE,OPTIONS',
+    optionsSuccessStatus: 200,
+    origin: 'https://web.engr.oregonstate.edu/~ladae'
+}));
+app.options('*', cors());
 
 app.get('/', function(req, res) {
     res.send("NotFlix Backend API running.");
@@ -20,7 +28,6 @@ const HOME = 'https://notflix_backend.herokuapp.com';
 // Database
 import mysql from 'mysql';
 const db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
-
 
 // Functions
 
@@ -62,6 +69,16 @@ app.post('/customers', function(req, res) {
         'VALUES (' + req.body.firstName + ', ' + req.body.lastName
         + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
 
+    db.query(addCustomer, function(err, results) {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        res.status(201);
+        res.send(HOME + '/customers/' + results);
+    });
+
+    /*
     db.getConnection((err, instance) => {
         if (err) {
             res.status(503);
@@ -75,6 +92,8 @@ app.post('/customers', function(req, res) {
             res.send(HOME + '/customers/' + results);
         });
     });
+
+     */
 });
 
 // READ all or selected Customers
