@@ -65,14 +65,15 @@ app.post('/customers', function(req, res) {
         'VALUES (' + req.body.firstName + ', ' + req.body.lastName
         + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
 
-    db.query(addCustomer, function(err, results) {
-        if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
-        }
+    try {
+        let results = db.query(addCustomer);
         res.status(201);
         res.send(HOME + '/customers/' + results);
-    });
+    } catch (e) {
+        res.status(503);
+        res.send(e);
+    }
+
 
     /*
     db.getConnection((err, instance) => {
