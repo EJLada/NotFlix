@@ -58,16 +58,17 @@ function queryBuilder(query, body) {
 // CREATE new Customer record
 app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
+    const body = JSON.parse(req.body);
     for (const _ in ['firstName', 'lastName', 'email']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!_ in Object.keys(body)) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
     let addCustomer = 'INSERT INTO Customers (firstName, lastName, email) ' +
-        'VALUES (' + req.body.firstName + ', ' + req.body.lastName
-        + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
+        'VALUES (' + body.firstName + ', ' + body.lastName
+        + ', ' + body.email + '); SELECT LAST_INSERT_ID();';
 
     db.query(addCustomer, function(err, results) {
         if (err) {
