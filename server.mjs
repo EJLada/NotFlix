@@ -54,6 +54,7 @@ function queryBuilder(query, body) {
 // CREATE new Customer record
 app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
+    console.log(req.body);
     for (const _ in ['firstName', 'lastName', 'email']) {
         if (!_ in Object.keys(req.body)) {
             res.status(400);
@@ -61,17 +62,19 @@ app.post('/customers', function(req, res) {
         }
     }
 
-    let addCustomer = 'INSERT INTO Customers (firstName, lastName, email) ' +
+    /*let addCustomer = 'INSERT INTO Customers (firstName, lastName, email) ' +
         'VALUES (' + req.body.firstName + ', ' + req.body.lastName
         + ', ' + req.body.email + '); SELECT LAST_INSERT_ID();';
-
+    */
+    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES (${req.body.firstName}, ${req.body.lastName}, ${req.body.email}); SELECT LAST_INSERT_ID();`
 
     db.getConnection((err, instance) => {
         if (err) {
             res.status(503);
-            res.send('Bad connection to database');
+            res.send(err);
         }
         instance.query(addCustomer, function(err, results){
+            instance.release();
             if (err) throw err;
             // Send data
             res.status(201);
