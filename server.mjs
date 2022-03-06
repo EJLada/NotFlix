@@ -17,8 +17,7 @@ app.get('/', function(req, res) {
 
 // Database
 import mysql from 'mysql';
-import * as db from './database/db-connector.mjs';
-
+const db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
 
 
 // Functions
@@ -39,6 +38,7 @@ function queryBuilder(query, body) {
         concat = true;
     }
     query += ');';
+    return query;
 }
 
 
@@ -52,16 +52,24 @@ app.get('/customers', function(req, res) {
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
     if (req.hasBody) {
-        queryBuilder(getCustomers, req.body);
+        getCustomers = queryBuilder(getCustomers, req.body);
     }
     // Otherwise return all
     else getCustomers += ';';
 
     // Get data
-    db.pool.query(getCustomers, function(err, results, fields){
-        // Send data
-        res.send({customers: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getCustomers, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({customers: results});
+        });
+    });
 });
 
 // --------------------------SERIES ROUTES------------------------------------//
@@ -70,15 +78,23 @@ app.get('/series', function(req, res) {
     let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
     // Check for search parameters
     if (req.hasBody) {
-        queryBuilder(getSeries, req.body);
+        getSeries = queryBuilder(getSeries, req.body);
     }
     // Otherwise return all
     else getSeries += ';';
 
-    db.pool.query(getSeries, function(err, results, fields){
-        // Send data
-        res.send({series: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getSeries, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({series: results});
+        });
+    });
 });
 
 // --------------------------EPISODE ROUTES-----------------------------------//
@@ -88,15 +104,23 @@ app.get('/episodes', function(req, res) {
         'previousEpisode, nextEpisode, fileSource FROM Series';
     // Check for search parameters
     if (req.hasBody) {
-        queryBuilder(getEpisodes, req.body);
+        getEpisodes = queryBuilder(getEpisodes, req.body);
     }
     // Otherwise return all
     else getEpisodes += ';';
 
-    db.pool.query(getEpisodes, function(err, results, fields){
-        // Send data
-        res.send({episodes: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getEpisodes, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({episodes: results});
+        });
+    });
 });
 
 // ------------------------------GENRE ROUTES---------------------------------//
@@ -105,14 +129,23 @@ app.get('/genres', function(req, res) {
     let getGenres = 'SELECT genreID, genreName FROM Genres';
     // Check for search parameters
     if (req.hasBody) {
-        queryBuilder(getGenres, req.body);
+        getGenres = queryBuilder(getGenres, req.body);
     }
     // Otherwise return all
     else getGenres += ';';
 
-    db.pool.query(getGenres, function(err, results, fields){
-        res.send({genres: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getGenres, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({genres: results});
+        });
+    });
 });
 
 
@@ -126,13 +159,22 @@ app.get('/subscriptions', function(req, res) {
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
     // Check for search parameters
     if (req.hasBody) {
-        queryBuilder(getSubscriptions, req.body);
+        getSubscriptions = queryBuilder(getSubscriptions, req.body);
     }
     else getSubscriptions += ';';
 
-    db.pool.query(getSubscriptions, function(err, results, fields){
-        res.send({subscriptions: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getSubscriptions, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({subscriptions: results});
+        });
+    });
 });
 
 // ---------------------------CONTENT-TYPE ROUTES-----------------------------//
@@ -143,13 +185,22 @@ app.get('/contentTypes', function(req, res) {
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
     if (req.hasBody) {
-        queryBuilder(getContentTypes, req.body);
+        getContentTypes = queryBuilder(getContentTypes, req.body);
     }
     else getContentTypes += ';';
 
-    db.pool.query(getContentTypes, function(err, results, fields){
-        res.send({contentTypes: results});
-    })
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getContentTypes, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.send({contentTypes: results});
+        });
+    });
 });
 
 
