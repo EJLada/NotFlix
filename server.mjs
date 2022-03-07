@@ -397,10 +397,10 @@ app.post('/subscriptions', function(req, res) {
 
 // READ all or selected Subscriptions
 app.get('/subscriptions', function(req, res) {
-    let getSubscriptions = 'SELECT subscriptionID, customerID, ' +
+    let getSubscriptions = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
-        'seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
-        'INNER JOIN Customers ON Subscriptions.subscriptionID = Customers.customerID) ' +
+        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
+        'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
     // Check for search parameters
     if (req.hasBody) {
