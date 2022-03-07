@@ -428,7 +428,7 @@ app.get('/subscriptions/:id', function(req, res) {
     let getSubscription = 'SELECT subscriptionID, customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
         'seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
-        'INNER JOIN Customers ON Subscriptions.subscriptionID = Customers.customerID) ' +
+        'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID) WHERE '
         + `subscriptionID='${req.params.id}';`;
 
