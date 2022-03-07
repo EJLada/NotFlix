@@ -217,7 +217,7 @@ app.post('/episodes', function(req, res) {
     let addPrevCol = '';
     let addPrevVal = '';
     if (req.body.prevEpisode) {
-        addPrevCol = ', prevEpisode';
+        addPrevCol = ', previousEpisode';
         addPrevVal = `, '${req.body.prevEpisode}'`;
     }
 
