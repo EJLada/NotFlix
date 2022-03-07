@@ -425,9 +425,9 @@ app.get('/subscriptions', function(req, res) {
 
 // READ an individual Subscription record
 app.get('/subscriptions/:id', function(req, res) {
-    let getSubscription = 'SELECT subscriptionID, customerID, ' +
+    let getSubscription = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
-        'seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
+        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
         'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID) WHERE '
         + `subscriptionID='${req.params.id}';`;
