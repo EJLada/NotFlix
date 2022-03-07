@@ -206,8 +206,7 @@ app.get('/series/:id', function(req, res) {
 // CREATE new Episode record
 app.post('/episodes', function(req, res) {
     // Check for all necessary data to create record
-    for (const _ in ['seriesID', 'episodeTitle', 'releaseDate',
-        'prevEpisode', 'nextEpisode', 'fileSource']) {
+    for (const _ in ['seriesID', 'episodeTitle', 'releaseDate', 'fileSource']) {
         if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
