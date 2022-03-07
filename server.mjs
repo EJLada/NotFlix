@@ -140,7 +140,7 @@ app.post('/series', function(req, res) {
     }
 
     let addSeries = `INSERT INTO Series (title, contentRating)` +
-        ` VALUES ('req.body.seriesTitle', + 'req.body.contentRating');`;
+        ` VALUES ('${req.body.seriesTitle}', '${req.body.contentRating}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -214,11 +214,23 @@ app.post('/episodes', function(req, res) {
         }
     }
 
+    let addPrevCol = '';
+    let addPrevVal = '';
+    if (req.body.prevEpisode) {
+        addPrevCol = ', prevEpisode';
+        addPrevVal = `, '${req.body.prevEpisode}'`;
+    }
+
+    let addNextCol = '';
+    let addNextVal = '';
+    if (req.body.nextEpisode) {
+        addNextCol = ', nextEpisode';
+        addNextVal = `, '${req.body.nextEpisode}'`;
+    }
+
     let addEpisode = `INSERT INTO Episodes (seriesID, episodeTitle, releaseDate, ` +
-        `previousEpisode, nextEpisode, fileSource) ` +
-        `VALUES (${req.body.seriesID}, '${req.body.episodeTitle}'`
-        + `, '${req.body.releaseDate}', '${req.body.prevEpisode}'`
-        + `, '${req.body.nextEpisode}', '${req.body.fileSource}');`;
+        `fileSource${addPrevCol}${addNextCol}) VALUES (${req.body.seriesID}, '${req.body.episodeTitle}'`
+        + `, '${req.body.releaseDate}', '${req.body.fileSource}'${addPrevVal}${addNextVal});`;
 
     db.getConnection((err, instance) => {
         if (err) {
