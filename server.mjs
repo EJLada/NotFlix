@@ -478,7 +478,7 @@ app.post('/contenttypes', function(req, res) {
 
 // READ all or selected ContentTypes
 app.get('/contenttypes', function(req, res) {
-    let getContentTypes = 'SELECT seriesID, Series.title as seriesTitle, genreID, Genres.genreName as genreName FROM ' +
+    let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
