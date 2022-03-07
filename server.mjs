@@ -276,7 +276,7 @@ app.get('/episodes', function(req, res) {
 app.get('/episodes/:id', function(req, res) {
     let getEpisode = 'SELECT episodeID, seriesID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes WHERE episodeID='
-        + `'${req.params.id}');`;
+        + `'${req.params.id}';`;
 
     db.getConnection((err, instance) => {
         if (err) {
