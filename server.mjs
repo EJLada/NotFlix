@@ -56,13 +56,15 @@ app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
     console.log(req.body);
     for (const _ in ['firstName', 'lastName', 'email']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES ('${req.body.firstName}', '${req.body.lastName}', '${req.body.email}');`;
+    let addCustomer = `INSERT INTO Customers (firstName, lastName, email)` +
+        ` VALUES ('${req.body.firstName}', '${req.body.lastName}',` +
+        ` '${req.body.email}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -131,15 +133,14 @@ app.get('/customers/:id', function(req, res) {
 app.post('/series', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesTitle', 'contentRating']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addSeries = 'INSERT INTO Series (title, contentRating) ' +
-        'VALUES (' + req.body.seriesTitle
-        + ', ' + req.body.contentRating + '); SELECT LAST_INSERT_ID();';
+    let addSeries = `INSERT INTO Series (title, contentRating)` +
+        ` VALUES ('req.body.seriesTitle', + 'req.body.contentRating');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -151,7 +152,7 @@ app.post('/series', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(HOME + '/series/' + results);
+            res.send(`Series added successfully`);
         });
     });
 });
@@ -207,18 +208,17 @@ app.post('/episodes', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'episodeTitle', 'releaseDate',
         'prevEpisode', 'nextEpisode', 'fileSource']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addEpisode = 'INSERT INTO Episodes (seriesID, episodeTitle, releaseDate, ' +
-        'previousEpisode, nextEpisode, fileSource) ' +
-        'VALUES (' + req.body.seriesID + ', ' + req.body.episodeTitle
-        + ', ' + req.body.releaseDate + ', ' + req.body.prevEpisode
-        + ', ' + req.body.nextEpisode + ', ' + req.body.fileSource
-        + '); SELECT LAST_INSERT_ID();';
+    let addEpisode = `INSERT INTO Episodes (seriesID, episodeTitle, releaseDate, ` +
+        `previousEpisode, nextEpisode, fileSource) ` +
+        `VALUES (${req.body.seriesID}, '${req.body.episodeTitle}'`
+        + `, '${req.body.releaseDate}', '${req.body.prevEpisode}'`
+        + `, '${req.body.nextEpisode}', '${req.body.fileSource}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -230,7 +230,7 @@ app.post('/episodes', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(HOME + '/episodes/' + results);
+            res.send(`Episode created successfully`);
         });
     });
 });
@@ -265,7 +265,7 @@ app.get('/episodes', function(req, res) {
 app.get('/episodes/:id', function(req, res) {
     let getEpisode = 'SELECT episodeID, seriesID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Series WHERE episodeID='
-        + req.params.id + ';';
+        + `'${req.params.id}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -287,14 +287,13 @@ app.get('/episodes/:id', function(req, res) {
 app.post('/genres', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['genreName']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addGenre = 'INSERT INTO Genres (genreName) VALUES (' + req.body.genreName
-        + '); SELECT LAST_INSERT_ID();';
+    let addGenre = `INSERT INTO Genres (genreName) VALUES ('${req.body.genreName}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -306,7 +305,7 @@ app.post('/genres', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(HOME + '/genres/' + results);
+            res.send(`Genre created successfully`);
         });
     });
 });
@@ -337,10 +336,8 @@ app.get('/genres', function(req, res) {
 });
 
 // READ an individual Genre record
-// READ all or selected Genres
 app.get('/genres/:id', function(req, res) {
-    let getGenre = 'SELECT genreID, genreName FROM Genres WHERE genreID='
-        + req.params.id + ';';
+    let getGenre = `SELECT genreID, genreName FROM Genres WHERE genreID='${req.params.id}';`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -363,14 +360,14 @@ app.get('/genres/:id', function(req, res) {
 app.post('/subscriptions', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['customerID', 'seriesID']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addSubscription = 'INSERT INTO Subscriptions (customerID, seriesID) VALUES ('
-        + req.body.customerID + ', ' + req.body.seriesID + '); SELECT LAST_INSERT_ID();';
+    let addSubscription = `INSERT INTO Subscriptions (customerID, seriesID)` +
+        ` VALUES ('${req.body.customerID}', '${req.body.seriesID}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -382,7 +379,7 @@ app.post('/subscriptions', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(HOME + '/subscriptions/' + results);
+            res.send(`Subscription added successfully`);
         });
     });
 });
@@ -422,7 +419,7 @@ app.get('/subscriptions/:id', function(req, res) {
         'seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
         'INNER JOIN Customers ON Subscriptions.subscriptionID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID) WHERE '
-        + 'subscriptionID=' + req.params.id + ';';
+        + `subscriptionID='${req.params.id}';`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -444,15 +441,14 @@ app.get('/subscriptions/:id', function(req, res) {
 app.post('/contenttypes', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'genreID']) {
-        if (!_ in Object.keys(req.body)) {
+        if (!(_ in Object.keys(req.body))) {
             res.status(400);
             res.send('Bad Request');
         }
     }
 
-    let addContentType = 'INSERT INTO ContentTypes (seriesID, genreID) VALUES ('
-        + req.body.seriesID + ', ' + req.body.genreID
-        + '); SELECT LAST_INSERT_ID();';
+    let addContentType = `INSERT INTO ContentTypes (seriesID, genreID)` +
+        ` VALUES ('${req.body.seriesID}', '${req.body.genreID}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -464,7 +460,7 @@ app.post('/contenttypes', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(HOME + '/contenttypes/' + results);
+            res.send(`ContentType created successfully`);
         });
     });
 });
