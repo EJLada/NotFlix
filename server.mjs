@@ -62,7 +62,7 @@ app.post('/customers', function(req, res) {
         }
     }
 
-    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES ('${req.body.firstName}', '${req.body.lastName}', '${req.body.custEmail}'); SELECT LAST_INSERT_ID();`;
+    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES ('${req.body.firstName}', '${req.body.lastName}', '${req.body.email}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -74,7 +74,7 @@ app.post('/customers', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(201);
-            res.send(`${HOME}/customers/${results}`);
+            res.send(`Customer added successfully`);
         });
     });
 });
