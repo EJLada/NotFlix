@@ -62,7 +62,7 @@ app.post('/customers', function(req, res) {
         }
     }
 
-    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES ('${req.body.firstName}', '${req.body.lastName}', '${req.body.custEmail}') RETURNING customerID;`;
+    let addCustomer = `INSERT INTO Customers (firstName, lastName, email) VALUES ('${req.body.firstName}', '${req.body.lastName}', '${req.body.custEmail}'); SELECT LAST_INSERT_ID();`;
 
     db.getConnection((err, instance) => {
         if (err) {
