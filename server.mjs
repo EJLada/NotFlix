@@ -6,7 +6,7 @@
 import express from 'express';
 import cors from "cors";
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 3000;
 
 app.enable('trust proxy');
 app.use(express.json());
@@ -23,7 +23,8 @@ const HOME = 'https://notflix_backend.herokuapp.com';
 
 // Database
 import mysql from 'mysql';
-const db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
+let db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
+
 
 // Functions
 
