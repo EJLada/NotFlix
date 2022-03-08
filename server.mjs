@@ -128,6 +128,27 @@ app.get('/customers/:id', function(req, res) {
     });
 });
 
+// DELETE an individual Customer record
+app.delete('/customers/:id', function(req, res) {
+    // define query
+    let deleteCustomer = `DELETE FROM Customers WHERE customerID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteCustomer, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('Customer deleted successfully.');
+        });
+    });
+});
+
 // --------------------------SERIES ROUTES------------------------------------//
 // CREATE new Series record
 app.post('/series', function(req, res) {
@@ -198,6 +219,27 @@ app.get('/series/:id', function(req, res) {
             // Send data
             res.status(200);
             res.send({series: results});
+        });
+    });
+});
+
+// DELETE an individual Series record
+app.delete('/series/:id', function(req, res) {
+    // define query
+    let deleteSeries = `DELETE FROM Series WHERE seriesID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteSeries, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('Series deleted successfully.');
         });
     });
 });
@@ -293,6 +335,27 @@ app.get('/episodes/:id', function(req, res) {
     });
 });
 
+// DELETE an individual Episode record
+app.delete('/episodes/:id', function(req, res) {
+    // define query
+    let deleteEpisode = `DELETE FROM Episodes WHERE episodeID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteEpisode, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('Episode deleted successfully.');
+        });
+    });
+});
+
 // ------------------------------GENRE ROUTES---------------------------------//
 // CREATE new Genre record
 app.post('/genres', function(req, res) {
@@ -365,6 +428,26 @@ app.get('/genres/:id', function(req, res) {
     });
 });
 
+// DELETE an individual Genre record
+app.delete('/genres/:id', function(req, res) {
+    // define query
+    let deleteGenre = `DELETE FROM Genres WHERE genreID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteGenre, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('Genre deleted successfully.');
+        });
+    });
+});
 
 // ---------------------------SUBSCRIPTION ROUTES-----------------------------//
 // CREATE new Subscription record
@@ -447,9 +530,30 @@ app.get('/subscriptions/:id', function(req, res) {
     });
 });
 
+// DELETE an individual Subscription record
+app.delete('/subscriptions/:id', function(req, res) {
+    // define query
+    let deleteSubscription = `DELETE FROM Subscriptions WHERE subscriptionID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteSubscription, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('Subscription deleted successfully.');
+        });
+    });
+});
+
 // ---------------------------CONTENT-TYPE ROUTES-----------------------------//
 // CREATE new ContentType record
-app.post('/contenttypes', function(req, res) {
+app.post('/contents', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'genreID']) {
         if (!(_ in Object.keys(req.body))) {
@@ -477,7 +581,7 @@ app.post('/contenttypes', function(req, res) {
 });
 
 // READ all or selected ContentTypes
-app.get('/contenttypes', function(req, res) {
+app.get('/contents', function(req, res) {
     let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
@@ -501,6 +605,54 @@ app.get('/contenttypes', function(req, res) {
         });
     });
 });
+
+// READ individual ContentType record needs a request body
+// containing 'seriesID' and 'genreID'.
+app.get('/contents', function(req, res) {
+    let getContentType = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
+        '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
+        'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID) ' +
+        `WHERE (ContentTypes.seriesID=${req.body.seriesID} AND ContentTypes.genreID=${req.body.genreID});`;
+
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(getContentType, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.status(200);
+            res.send({contentType: results});
+        });
+    });
+});
+
+// DELETE individual ContentType record needs a request body containing
+// 'seriesID' and 'genreID'
+app.delete('/contents', function(req, res) {
+    // define query
+    let deleteContentType = `DELETE FROM ContentTypes WHERE ` +
+        `(seriesID=${req.body.seriesID} AND genreID=${req.body.genreID});`;
+
+    db.getConnection((err, instance) => {
+        if (err) {
+            res.status(503);
+            res.send('Bad connection to database');
+        }
+        instance.query(deleteContentType, function(err, results) {
+            instance.release();
+            if (err) {
+                res.status(404);
+                res.send(err);
+            }
+            res.status(200)
+            res.send('ContentType deleted successfully.');
+        });
+    });
+});
+
 
 
 /*
