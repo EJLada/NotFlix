@@ -72,11 +72,15 @@ app.post('/customers', function(req, res) {
             res.send(err);
         }
         instance.query(addCustomer, function(err, results){
-            instance.release();
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`Customer added successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(201);
+                res.send(`${HOME}/customers/${results}`);
+            })
+
         });
     });
 });
