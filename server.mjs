@@ -73,14 +73,14 @@ app.post('/customers', function(req, res) {
         }
         instance.query(addCustomer, function(err) {
             if (err) throw err;
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/customers/${Object.values(results[0])[0]}`);
+            });
         });
-        instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
-            if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`${HOME}/customers/${Object.values(results[0])[0]}`);
-        });
-        instance.release(); // ?
     });
 });
 
@@ -140,7 +140,7 @@ app.delete('/customers/:id', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteCustomer, function(err, results) {
+        instance.query(deleteCustomer, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
@@ -171,12 +171,15 @@ app.post('/series', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(addSeries, function(err, results){
-            instance.release();
+        instance.query(addSeries, function(err) {
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`Series added successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/series/${Object.values(results[0])[0]}`);
+            });
         });
     });
 });
@@ -235,7 +238,7 @@ app.delete('/series/:id', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteSeries, function(err, results) {
+        instance.query(deleteSeries, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
@@ -281,12 +284,15 @@ app.post('/episodes', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(addEpisode, function(err, results){
-            instance.release();
+        instance.query(addEpisode, function(err){
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`Episode created successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/episodes/${Object.values(results[0])[0]}`);
+            });
         });
     });
 });
@@ -347,7 +353,7 @@ app.delete('/episodes/:id', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteEpisode, function(err, results) {
+        instance.query(deleteEpisode, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
@@ -377,12 +383,15 @@ app.post('/genres', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(addGenre, function(err, results){
-            instance.release();
+        instance.query(addGenre, function(err){
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`Genre created successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/genres/${Object.values(results[0])[0]}`);
+            });
         });
     });
 });
@@ -440,7 +449,7 @@ app.delete('/genres/:id', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteGenre, function(err, results) {
+        instance.query(deleteGenre, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
@@ -471,12 +480,15 @@ app.post('/subscriptions', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(addSubscription, function(err, results){
-            instance.release();
+        instance.query(addSubscription, function(err){
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`Subscription added successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/subscriptions/${Object.values(results[0])[0]}`);
+            });
         });
     });
 });
@@ -542,7 +554,7 @@ app.delete('/subscriptions/:id', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteSubscription, function(err, results) {
+        instance.query(deleteSubscription, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
@@ -573,12 +585,15 @@ app.post('/contents', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(addContentType, function(err, results){
-            instance.release();
+        instance.query(addContentType, function(err){
             if (err) throw err;
-            // Send data
-            res.status(201);
-            res.send(`ContentType created successfully`);
+            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                if (err) throw err;
+                // Send data
+                instance.release();
+                res.status(201);
+                res.send(`${HOME}/contents/${Object.values(results[0])[0]}`);
+            });
         });
     });
 });
@@ -644,7 +659,7 @@ app.delete('/contents', function(req, res) {
             res.status(503);
             res.send('Bad connection to database');
         }
-        instance.query(deleteContentType, function(err, results) {
+        instance.query(deleteContentType, function(err) {
             instance.release();
             if (err) {
                 res.status(404);
