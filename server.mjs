@@ -77,9 +77,8 @@ app.post('/customers', function(req, res) {
         instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
             if (err) throw err;
             // Send data
-            let id = Object.values(results)[0];
             res.status(201);
-            res.send(`${HOME}/customers/${id}`);
+            res.send(`${HOME}/customers/${JSON.stringify(results)}`);
         });
         instance.release(); // ?
     });
