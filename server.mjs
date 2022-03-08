@@ -71,18 +71,17 @@ app.post('/customers', function(req, res) {
             res.status(503);
             res.send(err);
         }
-        instance.query(addCustomer, function(err, results){
+        instance.query(addCustomer, function(err) {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
-                instance.release();
-                if (err) throw err;
-                // Send data
-                let id = Object.values(results)[0];
-                res.status(201);
-                res.send(`${HOME}/customers/${id}`);
-            })
-
         });
+        instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            if (err) throw err;
+            // Send data
+            let id = Object.values(results)[0];
+            res.status(201);
+            res.send(`${HOME}/customers/${id}`);
+        });
+        instance.release(); // ?
     });
 });
 
