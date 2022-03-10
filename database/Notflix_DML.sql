@@ -16,7 +16,7 @@ SELECT * FROM Customers
 WHERE (customerID = :customerIDInput
            AND firstName = :firstNameInput
            AND lastName = :lastNameInput
-           AND email = :lastNameInput);
+           AND email = :emailInput);
 
 -- UPDATE selected Customer entity.
 -- customerID provided by front-end.
@@ -32,7 +32,7 @@ WHERE customerID = :customerID;
 -- SERIES QUERIES
 -- CREATE a new Series entity
 INSERT INTO Series (title, contentRating)
-VALUES (:titleInput, :contentRatingSelectFromDropdown);
+VALUES (:titleInput, :contentRatingSelect);
 
 -- READ all Series entities
 SELECT * FROM Series;
@@ -42,12 +42,12 @@ SELECT * FROM Series;
 SELECT * FROM Series
 WHERE (seriesID = :seriesIDInput
            AND title = :titleInput
-           AND contentRating = :contentRatingSelectFromDropdown);
+           AND contentRating = :contentRatingSelect);
 
 -- UPDATE selected Series entity.
 -- seriesID provided by front-end.
 UPDATE Series
-SET title = :titleInput, contentRating = :contentRatingSelectFromDropdown
+SET title = :titleInput, contentRating = :contentRatingSelect
 WHERE seriesID = :seriesID;
 
 -- DELETE a selected Series entity.
@@ -87,13 +87,9 @@ SET seriesID = :seriesIDInput,
     fileSource = :fileSourceInput
 WHERE episodeID = :episodeID;
 
--- query to retrieve episodes in a series for previousEpisode and nextEpisode dropdown
--- seriesID can be input or by frontend
--- I don't see episode number so I'm assuming order by date/episodeID both work)
-
 -- Read all Episode entities of selected series
 -- seriesID provided by front-end (I'm assuming)
-SELECT episodeTitle FROM Episodes
+SELECT episodeID, episodeTitle FROM Episodes
 WHERE seriesID = :seriesID
 ORDER BY episodeID;
 
@@ -125,6 +121,65 @@ WHERE genreID = :genreID;
 DELETE FROM Genres
 WHERE genreID = :genreID;
 
---
+-- SUBSCRIPTION QUERIES
+-- CREATE a new Subscription entity
+INSERT INTO Subscriptions (customerID, seriesID)
+VALUES (:customerIDInput, :seriesIDInput);
 
--- TODO: Subscriptions and ContentTypes queries
+-- READ all Subscription entities
+SELECT subscriptionID, Customers.customerID as customerID,
+       Customers.firstName as firstName, Customers.lastName as lastName,
+       Series.seriesID as seriesID, Series.title as title,
+       dateSubscribed
+FROM ((Subscriptions
+    INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID)
+    INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID);
+
+-- READ selected Subscription entities
+-- WHERE conditions built based on front-end request
+SELECT subscriptionID, Customers.customerID as customerID,
+       Customers.firstName as firstName, Customers.lastName as lastName,
+       Series.seriesID as seriesID, Series.title as title,
+       dateSubscribed
+FROM ((Subscriptions
+    INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID)
+         INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)
+WHERE (subscriptionID = :subscriptionIDInput
+           AND Subscriptions.customerID = :customerIDInput
+           AND Subscriptions.seriesID = :seriesIDInput);
+
+-- UPDATE an individual Subscription entity
+UPDATE Subscriptions
+SET customerID = :customerIDInput, seriesID = :seriesIDInput
+WHERE subscriptionID = :subscriptionIDInput;
+
+-- DELETE an individual Subscription entity
+DELETE FROM Subscriptions
+WHERE subscriptionID = :subscriptionIDInput;
+
+-- CONTENTTYPES QUERIES
+-- CREATE new ContentType entity
+INSERT INTO ContentTypes (seriesID, genreID)
+VALUES (:seriesIDInput, :genreIDInput);
+
+-- READ all ContentType entities
+SELECT Series.seriesID as seriesID, Series.title as seriesTitle,
+       Genres.genreID as genreID, Genres.genreName as genreName
+FROM ((ContentTypes
+    INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID)
+    INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID);
+
+-- READ selected ContentType entities
+SELECT Series.seriesID as seriesID, Series.title as seriesTitle,
+       Genres.genreID as genreID, Genres.genreName as genreName
+FROM ((ContentTypes
+    INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID)
+         INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)
+WHERE (ContentTypes.seriesID = :seriesIDInput
+           AND ContentTypes.genreID = :genreIDInput);
+
+-- UPDATE ContentType entity omitted in favor of delete/create new
+
+-- DELETE ContentType entity
+DELETE FROM ContentTypes
+WHERE (seriesID = :seriesIDInput AND genreID = :genreIDInput);

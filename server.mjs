@@ -359,7 +359,7 @@ app.post('/episodes', function(req, res) {
 
 // READ all or selected Episodes
 app.get('/episodes', function(req, res) {
-    let getEpisodes = 'SELECT episodeID, seriesID, episodeTitle, releaseDate, ' +
+    let getEpisodes = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes';
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
@@ -388,7 +388,7 @@ app.get('/episodes', function(req, res) {
 
 // READ an individual Episode record
 app.get('/episodes/:id', function(req, res) {
-    let getEpisode = 'SELECT episodeID, seriesID, episodeTitle, releaseDate, ' +
+    let getEpisode = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes WHERE episodeID='
         + `'${req.params.id}';`;
 
