@@ -47,6 +47,19 @@ function queryBuilder(query, body) {
     return query;
 }
 
+function updateBuilder(query, body) {
+    query += ` SET `;
+    let concat = false;
+    for (const [key, value] of Object.entries(body)) {
+        if (concat) {
+            query += ', ';
+        }
+        query += `${key}='${value}'`;
+        concat = true;
+    }
+    return query;
+}
+
 
 /*
     ROUTES
@@ -57,8 +70,7 @@ app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['firstName', 'lastName', 'email']) {
         if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
+            return res.status(400).send('Bad Request');
         }
     }
 
@@ -68,8 +80,7 @@ app.post('/customers', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send(err);
+            return res.status(503).send(err);
         }
         instance.query(addCustomer, function(err) {
             if (err) throw err;
@@ -77,8 +88,7 @@ app.post('/customers', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/customers/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/customers/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -90,6 +100,11 @@ app.get('/customers', function(req, res) {
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ in ['firstName', 'lastName', 'email'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getCustomers = queryBuilder(getCustomers, req.body);
     }
     // Otherwise return all
@@ -98,8 +113,7 @@ app.get('/customers', function(req, res) {
     // Get data
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getCustomers, function(err, results){
             instance.release();
@@ -119,8 +133,7 @@ app.get('/customers/:id', function(req, res) {
     // Get data
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getCustomer, function(err, results){
             instance.release();
@@ -131,23 +144,49 @@ app.get('/customers/:id', function(req, res) {
     });
 });
 
+// UPDATE an individual customer record
+app.put('/customers/:id', function(req, res) {
+    // Handle empty requests
+    if (Object.keys(req.body).length === 0) {
+        return res.status(204).send('No Content');
+    }
+    // Build update query
+    for (const _ in Object.keys(req.body)) {
+        if (!(_ in ['firstName', 'lastName', 'email'])) {
+            return res.status(404).send('Not Found');
+        }
+    }
+    let updateCustomer = `UPDATE Customers`;
+    updateCustomer = updateBuilder(updateCustomer, req.body);
+    updateCustomer += ` WHERE customerID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(updateCustomer, function(err) {
+            instance.release();
+            if (err) {
+                return res.status(404).send(err);
+            }
+            res.status(200).send('OK');
+        });
+    });
+});
+
 // DELETE an individual Customer record
 app.delete('/customers/:id', function(req, res) {
     // define query
     let deleteCustomer = `DELETE FROM Customers WHERE customerID=${req.params.id};`;
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteCustomer, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('Customer deleted successfully.');
+            res.status(200).send('Customer deleted successfully.');
         });
     });
 });
@@ -158,8 +197,7 @@ app.post('/series', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesTitle', 'contentRating']) {
         if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
+            return res.status(400).send('Bad Request');
         }
     }
 
@@ -168,8 +206,7 @@ app.post('/series', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(addSeries, function(err) {
             if (err) throw err;
@@ -177,8 +214,7 @@ app.post('/series', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/series/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/series/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -189,6 +225,11 @@ app.get('/series', function(req, res) {
     let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ in ['seriesTitle', 'contentRating'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getSeries = queryBuilder(getSeries, req.body);
     }
     // Otherwise return all
@@ -196,15 +237,13 @@ app.get('/series', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getSeries, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({series: results});
+            res.status(200).send({series: results});
         });
     });
 });
@@ -216,15 +255,42 @@ app.get('/series/:id', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getSeries, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({series: results});
+            res.status(200).send({series: results});
+        });
+    });
+});
+
+// UPDATE an individual Series record
+app.put('/series/:id', function(req, res) {
+    // Handle empty requests
+    if (Object.keys(req.body).length === 0) {
+        return res.status(204).send('No Content');
+    }
+    // Build update query
+    for (const _ in Object.keys(req.body)) {
+        if (!(_ in ['seriesTitle', 'contentRating'])) {
+            return res.status(404).send('Not Found');
+        }
+    }
+    let updateSeries = `UPDATE Series`;
+    updateSeries = updateBuilder(updateSeries, req.body);
+    updateSeries += ` WHERE seriesID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(updateSeries, function(err) {
+            instance.release();
+            if (err) {
+                return res.status(404).send(err);
+            }
+            res.status(200).send('OK');
         });
     });
 });
@@ -235,17 +301,14 @@ app.delete('/series/:id', function(req, res) {
     let deleteSeries = `DELETE FROM Series WHERE seriesID=${req.params.id};`;
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteSeries, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('Series deleted successfully.');
+            res.status(200).send('Series deleted successfully.');
         });
     });
 });
@@ -256,8 +319,7 @@ app.post('/episodes', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'episodeTitle', 'releaseDate', 'fileSource']) {
         if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
+            return res.status(400).send('Bad Request');
         }
     }
 
@@ -281,8 +343,7 @@ app.post('/episodes', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(addEpisode, function(err){
             if (err) throw err;
@@ -290,8 +351,7 @@ app.post('/episodes', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/episodes/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/episodes/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -303,6 +363,11 @@ app.get('/episodes', function(req, res) {
         'previousEpisode, nextEpisode, fileSource FROM Episodes';
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ in ['episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getEpisodes = queryBuilder(getEpisodes, req.body);
     }
     // Otherwise return all
@@ -310,15 +375,13 @@ app.get('/episodes', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getEpisodes, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({episodes: results});
+            res.status(200).send({episodes: results});
         });
     });
 });
@@ -331,15 +394,42 @@ app.get('/episodes/:id', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getEpisode, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({episode: results});
+            res.status(200).send({episode: results});
+        });
+    });
+});
+
+// UPDATE an individual Episode record
+app.put('/episodes/:id', function(req, res) {
+    // Handle empty requests
+    if (Object.keys(req.body).length === 0) {
+        return res.status(204).send('No Content');
+    }
+    // Build update query
+    for (const _ in Object.keys(req.body)) {
+        if (!(_ in ['episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
+            return res.status(404).send('Not Found');
+        }
+    }
+    let updateEpisode = `UPDATE Episodes`;
+    updateEpisode = updateBuilder(updateEpisode, req.body);
+    updateEpisode += ` WHERE episodeID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(updateEpisode, function(err) {
+            instance.release();
+            if (err) {
+                return res.status(404).send(err);
+            }
+            res.status(200).send('OK');
         });
     });
 });
@@ -350,17 +440,14 @@ app.delete('/episodes/:id', function(req, res) {
     let deleteEpisode = `DELETE FROM Episodes WHERE episodeID=${req.params.id};`;
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteEpisode, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('Episode deleted successfully.');
+            res.status(200).send('Episode deleted successfully.');
         });
     });
 });
@@ -369,19 +456,15 @@ app.delete('/episodes/:id', function(req, res) {
 // CREATE new Genre record
 app.post('/genres', function(req, res) {
     // Check for all necessary data to create record
-    for (const _ in ['genreName']) {
-        if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
-        }
+    if (!('genreName' in Object.keys(req.body))) {
+        return res.status(400).send('Bad Request');
     }
 
     let addGenre = `INSERT INTO Genres (genreName) VALUES ('${req.body.genreName}');`;
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(addGenre, function(err){
             if (err) throw err;
@@ -389,8 +472,7 @@ app.post('/genres', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/genres/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/genres/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -401,6 +483,11 @@ app.get('/genres', function(req, res) {
     let getGenres = 'SELECT genreID, genreName FROM Genres';
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ === 'genreName')) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getGenres = queryBuilder(getGenres, req.body);
     }
     // Otherwise return all
@@ -408,15 +495,13 @@ app.get('/genres', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getGenres, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({genres: results});
+            res.status(200).send({genres: results});
         });
     });
 });
@@ -427,15 +512,41 @@ app.get('/genres/:id', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getGenre, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({genre: results});
+            res.status(200).send({genre: results});
+        });
+    });
+});
+
+// UPDATE an individual Genre record
+app.put('/genres/:id', function(req, res) {
+    // Handle empty requests
+    if (Object.keys(req.body).length === 0) {
+        return res.status(204).send('No Content');
+    }
+    // Build update query
+    for (const _ in Object.keys(req.body)) {
+        if (!(_ === 'genreName')) {
+            return res.status(404).send('Not Found');
+        }
+    }
+    let updateGenre = `UPDATE Genres SET genreName='${req.body.genreName}' ` +
+        `WHERE genreID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(updateGenre, function(err) {
+            instance.release();
+            if (err) {
+                return res.status(404).send(err);
+            }
+            res.status(200).send('OK');
         });
     });
 });
@@ -446,17 +557,14 @@ app.delete('/genres/:id', function(req, res) {
     let deleteGenre = `DELETE FROM Genres WHERE genreID=${req.params.id};`;
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteGenre, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('Genre deleted successfully.');
+            res.status(200).send('Genre deleted successfully.');
         });
     });
 });
@@ -467,8 +575,7 @@ app.post('/subscriptions', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['customerID', 'seriesID']) {
         if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
+            return res.status(400).send('Bad Request');
         }
     }
 
@@ -477,8 +584,7 @@ app.post('/subscriptions', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(addSubscription, function(err){
             if (err) throw err;
@@ -486,8 +592,7 @@ app.post('/subscriptions', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/subscriptions/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/subscriptions/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -502,21 +607,24 @@ app.get('/subscriptions', function(req, res) {
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ in ['seriesID', 'customerID', 'dateSubscribed'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getSubscriptions = queryBuilder(getSubscriptions, req.body);
     }
     else getSubscriptions += ';';
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getSubscriptions, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({subscriptions: results});
+            res.status(200).send({subscriptions: results});
         });
     });
 });
@@ -532,15 +640,42 @@ app.get('/subscriptions/:id', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getSubscription, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({subscription: results});
+            res.status(200).send({subscription: results});
+        });
+    });
+});
+
+// UPDATE an individual Subscription record
+app.put('/subscriptions/:id', function(req, res) {
+    // Handle empty requests
+    if (Object.keys(req.body).length === 0) {
+        return res.status(204).send('No Content');
+    }
+    // Build update query
+    for (const _ in Object.keys(req.body)) {
+        if (!(_ in ['seriesID', 'customerID', 'dateSubscribed'])) {
+            return res.status(404).send('Not Found');
+        }
+    }
+    let updateSubscription = `UPDATE Subscriptions`;
+    updateSubscription = updateBuilder(updateSubscription, req.body);
+    updateSubscription += ` WHERE subscriptionID=${req.params.id};`;
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(updateSubscription, function(err) {
+            instance.release();
+            if (err) {
+                return res.status(404).send(err);
+            }
+            res.status(200).send('OK');
         });
     });
 });
@@ -551,17 +686,14 @@ app.delete('/subscriptions/:id', function(req, res) {
     let deleteSubscription = `DELETE FROM Subscriptions WHERE subscriptionID=${req.params.id};`;
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteSubscription, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('Subscription deleted successfully.');
+            res.status(200).send('Subscription deleted successfully.');
         });
     });
 });
@@ -572,8 +704,7 @@ app.post('/contents', function(req, res) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'genreID']) {
         if (!(_ in Object.keys(req.body))) {
-            res.status(400);
-            res.send('Bad Request');
+            return res.status(400).send('Bad Request');
         }
     }
 
@@ -582,8 +713,7 @@ app.post('/contents', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(addContentType, function(err){
             if (err) throw err;
@@ -591,8 +721,7 @@ app.post('/contents', function(req, res) {
                 if (err) throw err;
                 // Send data
                 instance.release();
-                res.status(201);
-                res.send(`${HOME}/contents/${Object.values(results[0])[0]}`);
+                res.status(201).send(`${HOME}/contents/${Object.values(results[0])[0]}`);
             });
         });
     });
@@ -605,21 +734,24 @@ app.get('/contents', function(req, res) {
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
+        for (const _ in Object.keys(req.body)) {
+            if (!(_ in ['seriesID', 'genreID'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
         getContentTypes = queryBuilder(getContentTypes, req.body);
     }
     else getContentTypes += ';';
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getContentTypes, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({contentTypes: results});
+            res.status(200).send({contentTypes: results});
         });
     });
 });
@@ -634,17 +766,22 @@ app.get('/contents', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(getContentType, function(err, results){
             instance.release();
             if (err) throw err;
             // Send data
-            res.status(200);
-            res.send({contentType: results});
+            res.status(200).send({contentType: results});
         });
     });
+});
+
+// UPDATE individual ContentType record is unnecessary - instead just delete and
+// create a new record.
+app.put('/contents', function(req, res) {
+    // Generic response
+    res.status(405).send('Method Not Allowed');
 });
 
 // DELETE individual ContentType record needs a request body containing
@@ -656,17 +793,14 @@ app.delete('/contents', function(req, res) {
 
     db.getConnection((err, instance) => {
         if (err) {
-            res.status(503);
-            res.send('Bad connection to database');
+            return res.status(503).send('Bad connection to database');
         }
         instance.query(deleteContentType, function(err) {
             instance.release();
             if (err) {
-                res.status(404);
-                res.send(err);
+                return res.status(404).send(err);
             }
-            res.status(200)
-            res.send('ContentType deleted successfully.');
+            res.status(200).send('ContentType deleted successfully.');
         });
     });
 });
