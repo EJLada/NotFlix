@@ -226,7 +226,7 @@ app.get('/series', function(req, res) {
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
         for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['seriesTitle', 'contentRating'])) {
+            if (!(_ in ['seriesID', 'seriesTitle', 'contentRating'])) {
                 return res.status(404).send('Not Found');
             }
         }
@@ -364,7 +364,7 @@ app.get('/episodes', function(req, res) {
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
         for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
+            if (!(_ in ['episodeID', 'episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
                 return res.status(404).send('Not Found');
             }
         }
@@ -484,7 +484,7 @@ app.get('/genres', function(req, res) {
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
         for (const _ in Object.keys(req.body)) {
-            if (!(_ === 'genreName')) {
+            if (!(_ in ['genreID', 'genreName'])) {
                 return res.status(404).send('Not Found');
             }
         }
@@ -608,7 +608,7 @@ app.get('/subscriptions', function(req, res) {
     // Check for search parameters
     if (Object.keys(req.body).length !== 0) {
         for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['seriesID', 'customerID', 'dateSubscribed'])) {
+            if (!(_ in ['subscriptionID', 'seriesID', 'customerID', 'dateSubscribed'])) {
                 return res.status(404).send('Not Found');
             }
         }
