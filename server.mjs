@@ -55,7 +55,6 @@ function queryBuilder(query, body) {
 // CREATE new Customer record
 app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
-    console.log(req.body);
     for (const _ in ['firstName', 'lastName', 'email']) {
         if (!(_ in Object.keys(req.body))) {
             res.status(400);
@@ -90,7 +89,7 @@ app.get('/customers', function(req, res) {
     // Define query
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getCustomers = queryBuilder(getCustomers, req.body);
     }
     // Otherwise return all
@@ -189,7 +188,7 @@ app.post('/series', function(req, res) {
 app.get('/series', function(req, res) {
     let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
     // Check for search parameters
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getSeries = queryBuilder(getSeries, req.body);
     }
     // Otherwise return all
@@ -303,7 +302,7 @@ app.get('/episodes', function(req, res) {
     let getEpisodes = 'SELECT episodeID, seriesID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes';
     // Check for search parameters
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getEpisodes = queryBuilder(getEpisodes, req.body);
     }
     // Otherwise return all
@@ -401,7 +400,7 @@ app.post('/genres', function(req, res) {
 app.get('/genres', function(req, res) {
     let getGenres = 'SELECT genreID, genreName FROM Genres';
     // Check for search parameters
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getGenres = queryBuilder(getGenres, req.body);
     }
     // Otherwise return all
@@ -502,7 +501,7 @@ app.get('/subscriptions', function(req, res) {
         'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
     // Check for search parameters
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getSubscriptions = queryBuilder(getSubscriptions, req.body);
     }
     else getSubscriptions += ';';
@@ -605,7 +604,7 @@ app.get('/contents', function(req, res) {
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
-    if (req.hasBody) {
+    if (Object.keys(req.body).length !== 0) {
         getContentTypes = queryBuilder(getContentTypes, req.body);
     }
     else getContentTypes += ';';
