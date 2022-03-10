@@ -727,7 +727,9 @@ app.post('/contents', function(req, res) {
     });
 });
 
-// READ all or selected ContentTypes
+// READ all or selected ContentTypes.
+// READ individual ContentType record just needs a request body
+// containing both 'seriesID' and 'genreID'.
 app.get('/contents', function(req, res) {
     let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
@@ -752,27 +754,6 @@ app.get('/contents', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(200).send({contentTypes: results});
-        });
-    });
-});
-
-// READ individual ContentType record needs a request body
-// containing 'seriesID' and 'genreID'.
-app.get('/contents', function(req, res) {
-    let getContentType = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
-        '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
-        'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID) ' +
-        `WHERE (ContentTypes.seriesID=${req.body.seriesID} AND ContentTypes.genreID=${req.body.genreID});`;
-
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getContentType, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.status(200).send({contentType: results});
         });
     });
 });
