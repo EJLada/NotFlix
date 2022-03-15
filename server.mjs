@@ -119,6 +119,7 @@ app.get('/customers', function(req, res) {
     // Define query
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
+
     if (Object.keys(req.query).length !== 0) {
         for (const _ in Object.keys(req.query)) {
             if (!(_ in ['firstName', 'lastName', 'email'])) {
