@@ -5,7 +5,7 @@
   "main": "server.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.mjs",
+    "start": "pm2 start server.mjs",
     "heroku-postbuild": "echo Skip builds on Heroku"
   },
   "repository": {

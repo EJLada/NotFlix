@@ -1,1 +1,1 @@
-web: node server.mjs
+web: pm2 start server.mjs
