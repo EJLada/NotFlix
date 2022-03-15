@@ -94,36 +94,6 @@ app.post('/customers', function(req, res) {
     });
 });
 
-// READ all or selected Customers
-app.get('/customers', function(req, res) {
-    // Define query
-    let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
-    // Build query if search parameters exist
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['firstName', 'lastName', 'email'])) {
-                return res.status(404).send('Not Found');
-            }
-        }
-        getCustomers = queryBuilder(getCustomers, req.body);
-    }
-    // Otherwise return all
-    else getCustomers += ';';
-
-    // Get data
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getCustomers, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.send({customers: results});
-        });
-    });
-});
-
 // READ an individual Customer record
 app.get('/customers/:id', function(req, res) {
     // Define query
@@ -139,7 +109,37 @@ app.get('/customers/:id', function(req, res) {
             instance.release();
             if (err) throw err;
             // Send data
-            res.send({customer: results});
+            res.status(200).send({customer: results});
+        });
+    });
+});
+
+// READ all or selected Customers
+app.get('/customers', function(req, res) {
+    // Define query
+    let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
+    // Build query if search parameters exist
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
+            if (!(_ in ['firstName', 'lastName', 'email'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
+        getCustomers = queryBuilder(getCustomers, req.query);
+    }
+    // Otherwise return all
+    else getCustomers += ';';
+
+    // Get data
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(getCustomers, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.status(200).send({customers: results});
         });
     });
 });
@@ -220,20 +220,10 @@ app.post('/series', function(req, res) {
     });
 });
 
-// READ all or selected Series
-app.get('/series', function(req, res) {
-    let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
-    // Check for search parameters
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['seriesID', 'seriesTitle', 'contentRating'])) {
-                return res.status(404).send('Not Found');
-            }
-        }
-        getSeries = queryBuilder(getSeries, req.body);
-    }
-    // Otherwise return all
-    else getSeries += ';';
+// READ an individual Series record
+app.get('/series/:id', function(req, res) {
+    let getSeries = 'SELECT seriesID, title, contentRating FROM Series ' +
+        'WHERE seriesID=' + req.params.id + ';';
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -248,10 +238,20 @@ app.get('/series', function(req, res) {
     });
 });
 
-// READ an individual Series record
-app.get('/series/:id', function(req, res) {
-    let getSeries = 'SELECT seriesID, title, contentRating FROM Series ' +
-        'WHERE seriesID=' + req.params.id + ';';
+// READ all or selected Series
+app.get('/series', function(req, res) {
+    let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
+    // Check for search parameters
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
+            if (!(_ in ['seriesID', 'seriesTitle', 'contentRating'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
+        getSeries = queryBuilder(getSeries, req.query);
+    }
+    // Otherwise return all
+    else getSeries += ';';
 
     db.getConnection((err, instance) => {
         if (err) {
@@ -357,35 +357,6 @@ app.post('/episodes', function(req, res) {
     });
 });
 
-// READ all or selected Episodes
-app.get('/episodes', function(req, res) {
-    let getEpisodes = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
-        'previousEpisode, nextEpisode, fileSource FROM Episodes';
-    // Check for search parameters
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['episodeID', 'episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
-                return res.status(404).send('Not Found');
-            }
-        }
-        getEpisodes = queryBuilder(getEpisodes, req.body);
-    }
-    // Otherwise return all
-    else getEpisodes += ';';
-
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getEpisodes, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.status(200).send({episodes: results});
-        });
-    });
-});
-
 // READ an individual Episode record
 app.get('/episodes/:id', function(req, res) {
     let getEpisode = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
@@ -401,6 +372,35 @@ app.get('/episodes/:id', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(200).send({episode: results});
+        });
+    });
+});
+
+// READ all or selected Episodes
+app.get('/episodes', function(req, res) {
+    let getEpisodes = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
+        'previousEpisode, nextEpisode, fileSource FROM Episodes';
+    // Check for search parameters
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
+            if (!(_ in ['episodeID', 'episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
+        getEpisodes = queryBuilder(getEpisodes, req.query);
+    }
+    // Otherwise return all
+    else getEpisodes += ';';
+
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(getEpisodes, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.status(200).send({episodes: results});
         });
     });
 });
@@ -478,34 +478,6 @@ app.post('/genres', function(req, res) {
     });
 });
 
-// READ all or selected Genres
-app.get('/genres', function(req, res) {
-    let getGenres = 'SELECT genreID, genreName FROM Genres';
-    // Check for search parameters
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['genreID', 'genreName'])) {
-                return res.status(404).send('Not Found');
-            }
-        }
-        getGenres = queryBuilder(getGenres, req.body);
-    }
-    // Otherwise return all
-    else getGenres += ';';
-
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getGenres, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.status(200).send({genres: results});
-        });
-    });
-});
-
 // READ an individual Genre record
 app.get('/genres/:id', function(req, res) {
     let getGenre = `SELECT genreID, genreName FROM Genres WHERE genreID='${req.params.id}';`;
@@ -519,6 +491,34 @@ app.get('/genres/:id', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(200).send({genre: results});
+        });
+    });
+});
+
+// READ all or selected Genres
+app.get('/genres', function(req, res) {
+    let getGenres = 'SELECT genreID, genreName FROM Genres';
+    // Check for search parameters
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
+            if (!(_ in ['genreID', 'genreName'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
+        getGenres = queryBuilder(getGenres, req.query);
+    }
+    // Otherwise return all
+    else getGenres += ';';
+
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(getGenres, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.status(200).send({genres: results});
         });
     });
 });
@@ -598,37 +598,6 @@ app.post('/subscriptions', function(req, res) {
     });
 });
 
-// READ all or selected Subscriptions
-app.get('/subscriptions', function(req, res) {
-    let getSubscriptions = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
-        'Customers.firstName as firstName, Customers.lastName as lastName, ' +
-        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
-        'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
-        'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
-    // Check for search parameters
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
-            if (!(_ in ['subscriptionID', 'seriesID', 'customerID', 'dateSubscribed'])) {
-                return res.status(404).send('Not Found');
-            }
-        }
-        getSubscriptions = queryBuilder(getSubscriptions, req.body);
-    }
-    else getSubscriptions += ';';
-
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getSubscriptions, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.status(200).send({subscriptions: results});
-        });
-    });
-});
-
 // READ an individual Subscription record
 app.get('/subscriptions/:id', function(req, res) {
     let getSubscription = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
@@ -647,6 +616,37 @@ app.get('/subscriptions/:id', function(req, res) {
             if (err) throw err;
             // Send data
             res.status(200).send({subscription: results});
+        });
+    });
+});
+
+// READ all or selected Subscriptions
+app.get('/subscriptions', function(req, res) {
+    let getSubscriptions = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
+        'Customers.firstName as firstName, Customers.lastName as lastName, ' +
+        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
+        'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
+        'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
+    // Check for search parameters
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
+            if (!(_ in ['subscriptionID', 'seriesID', 'customerID', 'dateSubscribed'])) {
+                return res.status(404).send('Not Found');
+            }
+        }
+        getSubscriptions = queryBuilder(getSubscriptions, req.query);
+    }
+    else getSubscriptions += ';';
+
+    db.getConnection((err, instance) => {
+        if (err) {
+            return res.status(503).send('Bad connection to database');
+        }
+        instance.query(getSubscriptions, function(err, results){
+            instance.release();
+            if (err) throw err;
+            // Send data
+            res.status(200).send({subscriptions: results});
         });
     });
 });
@@ -735,13 +735,13 @@ app.get('/contents', function(req, res) {
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
+    if (Object.keys(req.query).length !== 0) {
+        for (const _ in Object.keys(req.query)) {
             if (!(_ in ['seriesID', 'genreID'])) {
                 return res.status(404).send('Not Found');
             }
         }
-        getContentTypes = queryBuilder(getContentTypes, req.body);
+        getContentTypes = queryBuilder(getContentTypes, req.query);
     }
     else getContentTypes += ';';
 
@@ -785,8 +785,6 @@ app.delete('/contents', function(req, res) {
         });
     });
 });
-
-
 
 /*
     LISTENER
