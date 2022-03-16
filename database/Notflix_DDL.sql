@@ -1,5 +1,14 @@
--- CREATE CUSTOMER TABLE
+-- Clear existing tables
+SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS Customers;
+DROP TABLE IF EXISTS Series;
+DROP TABLE IF EXISTS Episodes;
+DROP TABLE IF EXISTS Genres;
+DROP TABLE IF EXISTS Subscriptions;
+DROP TABLE IF EXISTS ContentTypes;
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- CREATE CUSTOMER TABLE
 CREATE TABLE Customers(
         customerID INT(11) PRIMARY KEY AUTO_INCREMENT,
         firstName VARCHAR(255) NOT NULL,
@@ -8,7 +17,6 @@ CREATE TABLE Customers(
 );
 
 -- CREATE SERIES TABLE
-DROP TABLE IF EXISTS Series;
 CREATE TABLE Series(
         seriesID INT(11) PRIMARY KEY AUTO_INCREMENT,
         title VARCHAR(255) NOT NULL,
@@ -16,7 +24,6 @@ CREATE TABLE Series(
 );
 
 -- CREATE AN EPISODE TABLE (with previous episode and next episode as foreign keys recursively)
-DROP TABLE IF EXISTS Episodes;
 CREATE TABLE Episodes(
         episodeID INT(11) PRIMARY KEY AUTO_INCREMENT,
         seriesID INT(11),
@@ -31,14 +38,12 @@ CREATE TABLE Episodes(
 );
 
 -- CREATE A GENRE TABLE
-DROP TABLE IF EXISTS Genres;
 CREATE TABLE Genres(
         genreID INT(11) PRIMARY KEY AUTO_INCREMENT,
         genreName VARCHAR(255) NOT NULL
 );
 
 -- create Subscription relationship(M:M)
-DROP TABLE IF EXISTS Subscriptions;
 CREATE TABLE Subscriptions(
         subscriptionID INT(11) PRIMARY KEY AUTO_INCREMENT,
         customerID INT NOT NULL,
@@ -49,7 +54,6 @@ CREATE TABLE Subscriptions(
 );
 
 -- create content Types relationship (m:m)
-DROP TABLE IF EXISTS ContentTypes;
 CREATE TABLE ContentTypes(
         seriesID INT NOT NULL,
         genreID INT NOT NULL,
@@ -58,8 +62,7 @@ CREATE TABLE ContentTypes(
         FOREIGN KEY (genreID) REFERENCES Genres(genreID)
 );
 
--- insert customer, series (with two episodes) of two genres.
-
+-- insert data
 INSERT INTO Customers(firstName, lastName, email)
 VALUES("John", "Doe", "johndoe@gmail.com");
 
@@ -161,8 +164,8 @@ SET previousEpisode = (SELECT episodeID FROM Episodes WHERE episodeTitle="The Ch
 WHERE episodeTitle = "The Sin";
 
 UPDATE Episodes
-SET nextEpisode = (SELECT episodeID FROM Episodes WHERE episodeTitle="Kaer Morhen"),
-WHERE episodeTitle = "A Grain of Truth";
+SET nextEpisode = (SELECT episodeID FROM Episodes WHERE episodeTitle="Kaer Morhen")
+WHERE (episodeTitle = "A Grain of Truth");
 
 UPDATE Episodes
 SET nextEpisode = (SELECT episodeID FROM Episodes WHERE episodeTitle="What Is Lost"),
