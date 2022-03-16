@@ -3,6 +3,8 @@
 */
 
 // Express
+import 'dotenv/config'
+
 import express from 'express';
 import cors from "cors";
 const app = express();
@@ -19,12 +21,17 @@ app.get('/', function(req, res) {
     res.send("NotFlix Backend API running.");
 });
 
-const HOME = 'https://notflix_backend.herokuapp.com';
+const HOME = 'http://127.0.0.1:3000/';
 
 // Database
 import mysql from 'mysql';
-let db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
-
+let db = mysql.createPool({
+    connectionLimit : 10,
+    host            : 'classmysql.engr.oregonstate.edu',
+    user            : 'cs340_linlo',
+    password        : '7450',
+    database        : 'cs340_linlo',
+});
 
 // Functions
 
@@ -68,8 +75,8 @@ function updateBuilder(query, body) {
 // CREATE new Customer record
 app.post('/customers', function(req, res) {
     // Check for all necessary data to create record
-    for (const _ in ['firstName', 'lastName', 'email']) {
-        if (!(_ in Object.keys(req.body))) {
+    for (const _ of ['firstName', 'lastName', 'email']) {
+        if (!(_ in req.body)) {
             return res.status(400).send('Bad Request');
         }
     }
@@ -99,13 +106,14 @@ app.get('/customers', function(req, res) {
     // Define query
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
-    if (Object.keys(req.body).length !== 0) {
-        for (const _ in Object.keys(req.body)) {
+    if (Object.keys(req.query).length !== 0) {
+        
+        for (const _ in Object.keys(req.query)) {
             if (!(_ in ['firstName', 'lastName', 'email'])) {
                 return res.status(404).send('Not Found');
             }
         }
-        getCustomers = queryBuilder(getCustomers, req.body);
+        getCustomers = queryBuilder(getCustomers, req.query);
     }
     // Otherwise return all
     else getCustomers += ';';
@@ -151,8 +159,8 @@ app.put('/customers/:id', function(req, res) {
         return res.status(204).send('No Content');
     }
     // Build update query
-    for (const _ in Object.keys(req.body)) {
-        if (!(_ in ['firstName', 'lastName', 'email'])) {
+    for (const i in Object.keys(req.body)) {
+        if (!(i in ['customerID', 'firstName', 'lastName', 'email'])) {
             return res.status(404).send('Not Found');
         }
     }
@@ -456,7 +464,8 @@ app.delete('/episodes/:id', function(req, res) {
 // CREATE new Genre record
 app.post('/genres', function(req, res) {
     // Check for all necessary data to create record
-    if (!('genreName' in Object.keys(req.body))) {
+    if (!('genreName' in req.body)) {
+        console.log(Object.keys(req.body));
         return res.status(400).send('Bad Request');
     }
 
@@ -531,7 +540,7 @@ app.put('/genres/:id', function(req, res) {
     }
     // Build update query
     for (const _ in Object.keys(req.body)) {
-        if (!(_ === 'genreName')) {
+        if (!('genreName' in req.body)) {
             return res.status(404).send('Not Found');
         }
     }
@@ -658,11 +667,16 @@ app.put('/subscriptions/:id', function(req, res) {
         return res.status(204).send('No Content');
     }
     // Build update query
-    for (const _ in Object.keys(req.body)) {
-        if (!(_ in ['seriesID', 'customerID', 'dateSubscribed'])) {
+    for (const _ of ['seriesID', 'customerID', 'dateSubscribed']) {
+        if (!(_ in req.body)) {
             return res.status(404).send('Not Found');
         }
     }
+    // for (const _ in Object.keys(req.body)) {
+    //     if (!(_ in ['seriesID', 'customerID', 'dateSubscribed'])) {
+    //         return res.status(404).send('Not Found');
+    //     }
+    // }
     let updateSubscription = `UPDATE Subscriptions`;
     updateSubscription = updateBuilder(updateSubscription, req.body);
     updateSubscription += ` WHERE subscriptionID=${req.params.id};`;
@@ -702,8 +716,8 @@ app.delete('/subscriptions/:id', function(req, res) {
 // CREATE new ContentType record
 app.post('/contents', function(req, res) {
     // Check for all necessary data to create record
-    for (const _ in ['seriesID', 'genreID']) {
-        if (!(_ in Object.keys(req.body))) {
+    for (const _ of ['seriesID', 'genreID']) {
+        if (!(_ in req.body)) {
             return res.status(400).send('Bad Request');
         }
     }
@@ -792,5 +806,5 @@ app.delete('/contents', function(req, res) {
     LISTENER
 */
 app.listen(PORT, function(){
-    console.log('Express started; press Ctrl-C to terminate.');
+    console.log('Express started at %s; press Ctrl-C to terminate.', HOME);
 });

@@ -20,6 +20,8 @@
   "homepage": "https://github.com/EJLada/NotFlix#readme",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "env-cmd": "^10.1.0",
     "express": "^4.17.2",
     "mysql": "^2.18.1",
     "pm2": "^5.1.2",
