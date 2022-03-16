@@ -19,7 +19,7 @@ CREATE TABLE Customers(
 -- CREATE SERIES TABLE
 CREATE TABLE Series(
         seriesID INT(11) PRIMARY KEY AUTO_INCREMENT,
-        title VARCHAR(255) NOT NULL,
+        seriesTitle VARCHAR(255) NOT NULL,
         contentRating VARCHAR(255) NOT NULL
 );
 

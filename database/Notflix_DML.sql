@@ -31,8 +31,8 @@ WHERE customerID = :customerID;
 
 -- SERIES QUERIES
 -- CREATE a new Series entity
-INSERT INTO Series (title, contentRating)
-VALUES (:titleInput, :contentRatingSelect);
+INSERT INTO Series (seriesTitle, contentRating)
+VALUES (:seriesTitleInput, :contentRatingSelect);
 
 -- READ all Series entities
 SELECT * FROM Series;
@@ -41,13 +41,13 @@ SELECT * FROM Series;
 -- Front-end logic constructs WHERE parameters.
 SELECT * FROM Series
 WHERE (seriesID = :seriesIDInput
-           AND title = :titleInput
+           AND seriesTitle = :seriesTitleInput
            AND contentRating = :contentRatingSelect);
 
 -- UPDATE selected Series entity.
 -- seriesID provided by front-end.
 UPDATE Series
-SET title = :titleInput, contentRating = :contentRatingSelect
+SET seriesTitle = :seriesTitleInput, contentRating = :contentRatingSelect
 WHERE seriesID = :seriesID;
 
 -- DELETE a selected Series entity.

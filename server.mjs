@@ -20,7 +20,7 @@ app.get('/', function(req, res) {
 
 const HOME = 'https://notflix_backend.herokuapp.com';
 
-// Database
+// // Database
 import mysql from 'mysql';
 let db = mysql.createPool(process.env.JAWSDB_MARIA_URL);
 
@@ -211,7 +211,7 @@ app.post('/series', function(req, res, next) {
         }
     }
 
-    let addSeries = `INSERT INTO Series (title, contentRating)` +
+    let addSeries = `INSERT INTO Series (seriesTitle, contentRating)` +
         ` VALUES ('${req.body.seriesTitle}', '${req.body.contentRating}');`;
 
     try {
@@ -234,7 +234,7 @@ app.post('/series', function(req, res, next) {
 
 // READ an individual Series record
 app.get('/series/:id', function(req, res, next) {
-    let getSeries = 'SELECT seriesID, title, contentRating FROM Series ' +
+    let getSeries = 'SELECT seriesID, seriesTitle, contentRating FROM Series ' +
         'WHERE seriesID=' + req.params.id + ';';
 
     try {
@@ -254,7 +254,7 @@ app.get('/series/:id', function(req, res, next) {
 
 // READ all or selected Series
 app.get('/series', function(req, res, next) {
-    let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
+    let getSeries = 'SELECT seriesID, seriesTitle, contentRating FROM Series';
     // Check for search parameters
     if (Object.keys(req.query).length !== 0) {
         for (const _ in Object.keys(req.query)) {
@@ -289,8 +289,8 @@ app.put('/series/:id', function(req, res, next) {
         return res.status(204).send('No Content');
     }
     // Build update query
-    for (const _ in Object.keys(req.body)) {
-        if (!(_ in ['seriesTitle', 'contentRating'])) {
+    for (const _ of ['seriesTitle', 'contentRating']) {
+        if (!(_ in req.body)) {
             return res.status(404).send('Not Found');
         }
     }
@@ -347,9 +347,9 @@ app.post('/episodes', function(req, res, next) {
 
     let addPrevCol = '';
     let addPrevVal = '';
-    if (req.body.prevEpisode) {
+    if (req.body.previousEpisode) {
         addPrevCol = ', previousEpisode';
-        addPrevVal = `, '${req.body.prevEpisode}'`;
+        addPrevVal = `, '${req.body.previousEpisode}'`;
     }
 
     let addNextCol = '';
@@ -442,15 +442,17 @@ app.put('/episodes/:id', function(req, res, next) {
         return res.status(204).send('No Content');
     }
     // Build update query
-    for (const _ in Object.keys(req.body)) {
-        if (!(_ in ['episodeTitle', 'releaseDate', 'prevEpisode', 'nextEpisode', 'fileSource'])) {
+    for (const _ of ['seriesID', 'episodeID', 'episodeTitle', 'releaseDate', 'previousEpisode', 'nextEpisode', 'fileSource']) {
+        if (!(_ in req.body)) {
             return res.status(404).send('Not Found');
+        } else if (req.body[_] === null) {
+            delete req.body[_]
         }
     }
-    let updateEpisode = `UPDATE Episodes`;
+    
+    let updateEpisode = 'UPDATE Episodes';
     updateEpisode = updateBuilder(updateEpisode, req.body);
     updateEpisode += ` WHERE episodeID=${req.params.id};`;
-
     try {
         db.getConnection((err, instance) => {
             if (err) throw err;
@@ -493,7 +495,6 @@ app.delete('/episodes/:id', function(req, res, next) {
 app.post('/genres', function(req, res, next) {
     // Check for all necessary data to create record
     if (!('genreName' in req.body)) {
-        console.log(Object.keys(req.body));
         return res.status(400).send('Bad Request');
     }
 
@@ -627,9 +628,14 @@ app.post('/subscriptions', function(req, res, next) {
             return res.status(400).send('Bad Request');
         }
     }
-
-    let addSubscription = `INSERT INTO Subscriptions (customerID, seriesID)` +
+    let addSubscription;
+    if ('dateSubscribed' in req.body) {
+        addSubscription = `INSERT INTO Subscriptions (customerID, seriesID, dateSubscribed)` +
+        ` VALUES ('${req.body.customerID}', '${req.body.seriesID}', '${req.body.dateSubscribed}');`;
+    } else {
+        addSubscription = `INSERT INTO Subscriptions (customerID, seriesID)` +
         ` VALUES ('${req.body.customerID}', '${req.body.seriesID}');`;
+    }
 
     try {
         db.getConnection((err, instance) => {
@@ -653,7 +659,7 @@ app.post('/subscriptions', function(req, res, next) {
 app.get('/subscriptions/:id', function(req, res, next) {
     let getSubscription = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
-        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
+        'Series.seriesID as seriesID, Series.seriesTitle as seriesTitle, dateSubscribed FROM ((Subscriptions ' +
         'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID) WHERE '
         + `subscriptionID='${req.params.id}';`;
@@ -677,7 +683,7 @@ app.get('/subscriptions/:id', function(req, res, next) {
 app.get('/subscriptions', function(req, res, next) {
     let getSubscriptions = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
-        'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
+        'Series.seriesID as seriesID, Series.seriesTitle as seriesTitle, dateSubscribed FROM ((Subscriptions ' +
         'INNER JOIN Customers ON Subscriptions.customerID = Customers.customerID) ' +
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID)'
     // Check for search parameters
@@ -687,9 +693,10 @@ app.get('/subscriptions', function(req, res, next) {
                 return res.status(404).send('Not Found');
             }
         }
+        getSubscriptions = 'SELECT * FROM (' + getSubscriptions + ') as t';
         getSubscriptions = queryBuilder(getSubscriptions, req.query);
     }
-    else getSubscriptions += ';';
+    else getSubscriptions += 'ORDER BY subscriptionID;';
 
     try {
         db.getConnection((err, instance) => {
@@ -799,7 +806,7 @@ app.post('/contents', function(req, res, next) {
 // READ individual ContentType record just needs a request body
 // containing both 'seriesID' and 'genreID'.
 app.get('/contents', function(req, res, next) {
-    let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
+    let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.seriesTitle as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
     // Check for search parameters
