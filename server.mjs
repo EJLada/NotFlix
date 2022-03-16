@@ -60,13 +60,17 @@ function updateBuilder(query, body) {
     return query;
 }
 
+function errorHandler(err, req, res, next) {
+    res.status(500).send(err);
+}
+
 
 /*
     ROUTES
 */
 // ------------------------CUSTOMER ROUTES------------------------------------//
 // CREATE new Customer record
-app.post('/customers', function(req, res) {
+app.post('/customers', function(req, res, next) {
     // Check for all necessary data to create record
     for (const _ in ['firstName', 'lastName', 'email']) {
         if (!(_ in Object.keys(req.body))) {
@@ -78,44 +82,48 @@ app.post('/customers', function(req, res) {
         ` VALUES ('${req.body.firstName}', '${req.body.lastName}',` +
         ` '${req.body.email}');`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send(err);
-        }
-        instance.query(addCustomer, function(err) {
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addCustomer, function(err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/customers/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/customers/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ an individual Customer record
-app.get('/customers/:id', function(req, res) {
+app.get('/customers/:id', function(req, res, next) {
     // Define query
     let getCustomer = 'SELECT customerID, firstName, lastName, email FROM ' +
         'Customers WHERE customerID=' + req.params.id + ';';
 
     // Get data
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getCustomer, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({customer: results});
+            instance.query(getCustomer, function(err, results){
+                if (err) throw err;
+                instance.release();
+                // Send data
+                res.status(200).send({customer: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected Customers
-app.get('/customers', function(req, res) {
+app.get('/customers', function(req, res, next) {
     // Define query
     let getCustomers = 'SELECT customerID, firstName, lastName, email FROM Customers'
     // Build query if search parameters exist
@@ -132,21 +140,23 @@ app.get('/customers', function(req, res) {
     else getCustomers += ';';
 
     // Get data
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getCustomers, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({customers: results});
+            instance.query(getCustomers, function(err, results){
+                if (err) throw err;
+                instance.release();
+                // Send data
+                res.status(200).send({customers: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE an individual customer record
-app.put('/customers/:id', function(req, res) {
+app.put('/customers/:id', function(req, res, next) {
     // Handle empty requests
     if (Object.keys(req.body).length === 0) {
         return res.status(204).send('No Content');
@@ -160,41 +170,42 @@ app.put('/customers/:id', function(req, res) {
     let updateCustomer = `UPDATE Customers`;
     updateCustomer = updateBuilder(updateCustomer, req.body);
     updateCustomer += ` WHERE customerID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(updateCustomer, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('OK');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(updateCustomer, function(err) {
+                if (err) throw err;
+                instance.release();
+                res.status(200).send('OK');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // DELETE an individual Customer record
-app.delete('/customers/:id', function(req, res) {
+app.delete('/customers/:id', function(req, res, next) {
     // define query
     let deleteCustomer = `DELETE FROM Customers WHERE customerID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteCustomer, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('Customer deleted successfully.');
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteCustomer, function(err) {
+                if (err) throw err;
+                instance.release();
+                res.status(200).send('Customer deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // --------------------------SERIES ROUTES------------------------------------//
 // CREATE new Series record
-app.post('/series', function(req, res) {
+app.post('/series', function(req, res, next) {
     // Check for all necessary data to create record
     for (const _ in ['seriesTitle', 'contentRating']) {
         if (!(_ in Object.keys(req.body))) {
@@ -205,42 +216,46 @@ app.post('/series', function(req, res) {
     let addSeries = `INSERT INTO Series (title, contentRating)` +
         ` VALUES ('${req.body.seriesTitle}', '${req.body.contentRating}');`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(addSeries, function(err) {
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addSeries, function (err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/series/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function (err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/series/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ an individual Series record
-app.get('/series/:id', function(req, res) {
+app.get('/series/:id', function(req, res, next) {
     let getSeries = 'SELECT seriesID, title, contentRating FROM Series ' +
         'WHERE seriesID=' + req.params.id + ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getSeries, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({series: results});
+            instance.query(getSeries, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({series: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected Series
-app.get('/series', function(req, res) {
+app.get('/series', function(req, res, next) {
     let getSeries = 'SELECT seriesID, title, contentRating FROM Series';
     // Check for search parameters
     if (Object.keys(req.query).length !== 0) {
@@ -254,21 +269,23 @@ app.get('/series', function(req, res) {
     // Otherwise return all
     else getSeries += ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getSeries, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({series: results});
+            instance.query(getSeries, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({series: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE an individual Series record
-app.put('/series/:id', function(req, res) {
+app.put('/series/:id', function(req, res, next) {
     // Handle empty requests
     if (Object.keys(req.body).length === 0) {
         return res.status(204).send('No Content');
@@ -282,41 +299,47 @@ app.put('/series/:id', function(req, res) {
     let updateSeries = `UPDATE Series`;
     updateSeries = updateBuilder(updateSeries, req.body);
     updateSeries += ` WHERE seriesID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(updateSeries, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('OK');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(updateSeries, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('OK');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // DELETE an individual Series record
-app.delete('/series/:id', function(req, res) {
+app.delete('/series/:id', function(req, res, next) {
     // define query
     let deleteSeries = `DELETE FROM Series WHERE seriesID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteSeries, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('Series deleted successfully.');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteSeries, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('Series deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // --------------------------EPISODE ROUTES-----------------------------------//
 // CREATE new Episode record
-app.post('/episodes', function(req, res) {
+app.post('/episodes', function(req, res, next) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'episodeTitle', 'releaseDate', 'fileSource']) {
         if (!(_ in Object.keys(req.body))) {
@@ -342,43 +365,49 @@ app.post('/episodes', function(req, res) {
         `fileSource${addPrevCol}${addNextCol}) VALUES (${req.body.seriesID}, '${req.body.episodeTitle}'`
         + `, '${req.body.releaseDate}', '${req.body.fileSource}'${addPrevVal}${addNextVal});`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(addEpisode, function(err){
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addEpisode, function (err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/episodes/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function (err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/episodes/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ an individual Episode record
-app.get('/episodes/:id', function(req, res) {
+app.get('/episodes/:id', function(req, res, next) {
     let getEpisode = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes WHERE episodeID='
         + `'${req.params.id}';`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getEpisode, function(err, results){
-            instance.release();
-            if (err) throw err;
-            // Send data
-            res.status(200).send({episode: results});
+    try {
+        db.getConnection((err, instance) => {
+            if (err) {
+                return res.status(503).send('Bad connection to database');
+            }
+            instance.query(getEpisode, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({episode: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected Episodes
-app.get('/episodes', function(req, res) {
+app.get('/episodes', function(req, res, next) {
     let getEpisodes = 'SELECT seriesID, episodeID, episodeTitle, releaseDate, ' +
         'previousEpisode, nextEpisode, fileSource FROM Episodes';
     // Check for search parameters
@@ -393,21 +422,23 @@ app.get('/episodes', function(req, res) {
     // Otherwise return all
     else getEpisodes += ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getEpisodes, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({episodes: results});
+            instance.query(getEpisodes, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({episodes: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE an individual Episode record
-app.put('/episodes/:id', function(req, res) {
+app.put('/episodes/:id', function(req, res, next) {
     // Handle empty requests
     if (Object.keys(req.body).length === 0) {
         return res.status(204).send('No Content');
@@ -421,41 +452,47 @@ app.put('/episodes/:id', function(req, res) {
     let updateEpisode = `UPDATE Episodes`;
     updateEpisode = updateBuilder(updateEpisode, req.body);
     updateEpisode += ` WHERE episodeID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(updateEpisode, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('OK');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(updateEpisode, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('OK');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // DELETE an individual Episode record
-app.delete('/episodes/:id', function(req, res) {
+app.delete('/episodes/:id', function(req, res, next) {
     // define query
     let deleteEpisode = `DELETE FROM Episodes WHERE episodeID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteEpisode, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('Episode deleted successfully.');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteEpisode, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('Episode deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // ------------------------------GENRE ROUTES---------------------------------//
 // CREATE new Genre record
-app.post('/genres', function(req, res) {
+app.post('/genres', function(req, res, next) {
     // Check for all necessary data to create record
     if (!('genreName' in Object.keys(req.body))) {
         return res.status(400).send('Bad Request');
@@ -463,41 +500,45 @@ app.post('/genres', function(req, res) {
 
     let addGenre = `INSERT INTO Genres (genreName) VALUES ('${req.body.genreName}');`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(addGenre, function(err){
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addGenre, function (err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/genres/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function (err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/genres/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ an individual Genre record
-app.get('/genres/:id', function(req, res) {
+app.get('/genres/:id', function(req, res, next) {
     let getGenre = `SELECT genreID, genreName FROM Genres WHERE genreID='${req.params.id}';`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getGenre, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({genre: results});
+            instance.query(getGenre, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({genre: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected Genres
-app.get('/genres', function(req, res) {
+app.get('/genres', function(req, res, next) {
     let getGenres = 'SELECT genreID, genreName FROM Genres';
     // Check for search parameters
     if (Object.keys(req.query).length !== 0) {
@@ -511,21 +552,23 @@ app.get('/genres', function(req, res) {
     // Otherwise return all
     else getGenres += ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getGenres, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({genres: results});
+            instance.query(getGenres, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({genres: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE an individual Genre record
-app.put('/genres/:id', function(req, res) {
+app.put('/genres/:id', function(req, res, next) {
     // Handle empty requests
     if (Object.keys(req.body).length === 0) {
         return res.status(204).send('No Content');
@@ -538,41 +581,47 @@ app.put('/genres/:id', function(req, res) {
     }
     let updateGenre = `UPDATE Genres SET genreName='${req.body.genreName}' ` +
         `WHERE genreID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(updateGenre, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('OK');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(updateGenre, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('OK');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // DELETE an individual Genre record
-app.delete('/genres/:id', function(req, res) {
+app.delete('/genres/:id', function(req, res, next) {
     // define query
     let deleteGenre = `DELETE FROM Genres WHERE genreID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteGenre, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('Genre deleted successfully.');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteGenre, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('Genre deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // ---------------------------SUBSCRIPTION ROUTES-----------------------------//
 // CREATE new Subscription record
-app.post('/subscriptions', function(req, res) {
+app.post('/subscriptions', function(req, res, next) {
     // Check for all necessary data to create record
     for (const _ in ['customerID', 'seriesID']) {
         if (!(_ in Object.keys(req.body))) {
@@ -583,24 +632,26 @@ app.post('/subscriptions', function(req, res) {
     let addSubscription = `INSERT INTO Subscriptions (customerID, seriesID)` +
         ` VALUES ('${req.body.customerID}', '${req.body.seriesID}');`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(addSubscription, function(err){
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addSubscription, function (err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/subscriptions/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function (err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/subscriptions/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ an individual Subscription record
-app.get('/subscriptions/:id', function(req, res) {
+app.get('/subscriptions/:id', function(req, res, next) {
     let getSubscription = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
         'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
@@ -608,21 +659,23 @@ app.get('/subscriptions/:id', function(req, res) {
         'INNER JOIN Series ON Subscriptions.seriesID = Series.seriesID) WHERE '
         + `subscriptionID='${req.params.id}';`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getSubscription, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({subscription: results});
+            instance.query(getSubscription, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({subscription: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected Subscriptions
-app.get('/subscriptions', function(req, res) {
+app.get('/subscriptions', function(req, res, next) {
     let getSubscriptions = 'SELECT subscriptionID, Customers.customerID as customerID, ' +
         'Customers.firstName as firstName, Customers.lastName as lastName, ' +
         'Series.seriesID as seriesID, Series.title as title, dateSubscribed FROM ((Subscriptions ' +
@@ -639,21 +692,23 @@ app.get('/subscriptions', function(req, res) {
     }
     else getSubscriptions += ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getSubscriptions, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({subscriptions: results});
+            instance.query(getSubscriptions, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({subscriptions: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE an individual Subscription record
-app.put('/subscriptions/:id', function(req, res) {
+app.put('/subscriptions/:id', function(req, res, next) {
     // Handle empty requests
     if (Object.keys(req.body).length === 0) {
         return res.status(204).send('No Content');
@@ -667,41 +722,47 @@ app.put('/subscriptions/:id', function(req, res) {
     let updateSubscription = `UPDATE Subscriptions`;
     updateSubscription = updateBuilder(updateSubscription, req.body);
     updateSubscription += ` WHERE subscriptionID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(updateSubscription, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('OK');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(updateSubscription, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('OK');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // DELETE an individual Subscription record
-app.delete('/subscriptions/:id', function(req, res) {
+app.delete('/subscriptions/:id', function(req, res, next) {
     // define query
     let deleteSubscription = `DELETE FROM Subscriptions WHERE subscriptionID=${req.params.id};`;
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteSubscription, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('Subscription deleted successfully.');
+
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteSubscription, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('Subscription deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // ---------------------------CONTENT-TYPE ROUTES-----------------------------//
 // CREATE new ContentType record
-app.post('/contents', function(req, res) {
+app.post('/contents', function(req, res, next) {
     // Check for all necessary data to create record
     for (const _ in ['seriesID', 'genreID']) {
         if (!(_ in Object.keys(req.body))) {
@@ -712,26 +773,28 @@ app.post('/contents', function(req, res) {
     let addContentType = `INSERT INTO ContentTypes (seriesID, genreID)` +
         ` VALUES ('${req.body.seriesID}', '${req.body.genreID}');`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(addContentType, function(err){
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            instance.query(`SELECT LAST_INSERT_ID();`, function(err, results) {
+            instance.query(addContentType, function (err) {
                 if (err) throw err;
-                // Send data
-                instance.release();
-                res.status(201).send(`${HOME}/contents/${Object.values(results[0])[0]}`);
+                instance.query(`SELECT LAST_INSERT_ID();`, function (err, results) {
+                    if (err) throw err;
+                    // Send data
+                    instance.release();
+                    res.status(201).send(`${HOME}/contents/${Object.values(results[0])[0]}`);
+                });
             });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // READ all or selected ContentTypes.
 // READ individual ContentType record just needs a request body
 // containing both 'seriesID' and 'genreID'.
-app.get('/contents', function(req, res) {
+app.get('/contents', function(req, res, next) {
     let getContentTypes = 'SELECT Series.seriesID as seriesID, Series.title as seriesTitle, Genres.genreID as genreID, Genres.genreName as genreName FROM ' +
         '((ContentTypes INNER JOIN Series ON ContentTypes.seriesID = Series.seriesID) ' +
         'INNER JOIN Genres ON ContentTypes.genreID = Genres.genreID)'
@@ -746,46 +809,52 @@ app.get('/contents', function(req, res) {
     }
     else getContentTypes += ';';
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(getContentTypes, function(err, results){
-            instance.release();
+    try {
+        db.getConnection((err, instance) => {
             if (err) throw err;
-            // Send data
-            res.status(200).send({contentTypes: results});
+            instance.query(getContentTypes, function (err, results) {
+                instance.release();
+                if (err) throw err;
+                // Send data
+                res.status(200).send({contentTypes: results});
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
 
 // UPDATE individual ContentType record is unnecessary - instead just delete and
 // create a new record.
-app.put('/contents', function(req, res) {
+app.put('/contents', function(req, res, next) {
     // Generic response
     res.status(405).send('Method Not Allowed');
 });
 
 // DELETE individual ContentType record needs a request body containing
 // 'seriesID' and 'genreID'
-app.delete('/contents', function(req, res) {
+app.delete('/contents', function(req, res, next) {
     // define query
     let deleteContentType = `DELETE FROM ContentTypes WHERE ` +
         `(seriesID=${req.body.seriesID} AND genreID=${req.body.genreID});`;
 
-    db.getConnection((err, instance) => {
-        if (err) {
-            return res.status(503).send('Bad connection to database');
-        }
-        instance.query(deleteContentType, function(err) {
-            instance.release();
-            if (err) {
-                return res.status(404).send(err);
-            }
-            res.status(200).send('ContentType deleted successfully.');
+    try {
+        db.getConnection((err, instance) => {
+            if (err) throw err;
+            instance.query(deleteContentType, function (err) {
+                instance.release();
+                if (err) {
+                    return res.status(404).send(err);
+                }
+                res.status(200).send('ContentType deleted successfully.');
+            });
         });
-    });
+    } catch(err) {
+        next(err);
+    }
 });
+
+app.use(errorHandler);
 
 /*
     LISTENER
