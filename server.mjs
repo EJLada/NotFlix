@@ -13,7 +13,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use(cors());
-app.options('*', cors());
 
 app.get('/', function(req, res) {
     res.send("NotFlix Backend API running.");
