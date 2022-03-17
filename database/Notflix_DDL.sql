@@ -73,13 +73,13 @@ INSERT INTO Customers(firstName, lastName, email)
 VALUES("Tina", "Belcher", "tina@bobsburgers.com");
 
 INSERT INTO Series(seriesTitle, contentRating)
-VALUES("How I Met Your Father", "PG");
+VALUES("How I Met Your Father", "PG: Parental Guidance Suggested");
 
 INSERT INTO Series(seriesTitle, contentRating)
-VALUES("The Mandalorian", "PG-13");
+VALUES("The Mandalorian", "PG13: Parents Strongly Cautioned");
 
 INSERT INTO Series(seriesTitle, contentRating)
-VALUES("The Witcher", "R");
+VALUES("The Witcher", "R: Restricted");
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
