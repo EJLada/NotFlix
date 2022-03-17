@@ -72,66 +72,66 @@ VALUES("Jim", "Halpert", "jimothy@dundermifflin.com");
 INSERT INTO Customers(firstName, lastName, email)
 VALUES("Tina", "Belcher", "tina@bobsburgers.com");
 
-INSERT INTO Series(title, contentRating)
+INSERT INTO Series(seriesTitle, contentRating)
 VALUES("How I Met Your Father", "PG");
 
-INSERT INTO Series(title, contentRating)
+INSERT INTO Series(seriesTitle, contentRating)
 VALUES("The Mandalorian", "PG-13");
 
-INSERT INTO Series(title, contentRating)
+INSERT INTO Series(seriesTitle, contentRating)
 VALUES("The Witcher", "R");
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-        (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+        (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
         "Pilot", "2022-01-18", NULL, NULL, " himyf01.m4a"
 );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-        (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+        (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
         "FOMO", "2022-01-18", NULL, NULL, "himyf02.m4a"
 );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
           "The Fixer", "2022-01-25", NULL, NULL, "himyf03.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           "The Mandalorian", "2019-11-12", NULL, NULL, "mando01.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           "The Child", "2019-11-15", NULL, NULL, "mando02.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           "The Sin", "2019-11-22", NULL, NULL, "mando03.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           "A Grain of Truth", "2021-12-17", NULL, NULL, "witchy01.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           "Kaer Morhen", "2021-12-17", NULL, NULL, "witchy02.m4a"
       );
 
 INSERT INTO Episodes(seriesID, episodeTitle, releaseDate, previousEpisode, nextEpisode, fileSource)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           "What Is Lost", "2021-12-17", NULL, NULL, "witchy03.m4a"
       );
 
@@ -186,59 +186,59 @@ INSERT INTO Genres(genreName) VALUES ("western");
 
 INSERT INTO ContentTypes(seriesID, genreID)
 VALUES(
-        (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+        (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
         (SELECT genreID FROM Genres WHERE genreName="romance")
 );
 
 INSERT INTO ContentTypes(seriesID, genreID) VALUES(
-        (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+        (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
         (SELECT genreID FROM Genres WHERE genreName= "comedy")
 );
 
 INSERT INTO ContentTypes(seriesID, genreID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           (SELECT genreID FROM Genres WHERE genreName="sci-fi")
       );
 
 INSERT INTO ContentTypes(seriesID, genreID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           (SELECT genreID FROM Genres WHERE genreName="western")
       );
 
 INSERT INTO ContentTypes(seriesID, genreID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           (SELECT genreID FROM Genres WHERE genreName="fantasy")
       );
 
 INSERT INTO ContentTypes(seriesID, genreID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           (SELECT genreID FROM Genres WHERE genreName="drama")
       );
 
 INSERT INTO Subscriptions(seriesID, customerID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           (SELECT customerID FROM Customers WHERE lastName="Belcher")
       );
 
 INSERT INTO Subscriptions(seriesID, customerID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Mandalorian"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Mandalorian"),
           (SELECT customerID FROM Customers WHERE lastName="Halpert")
       );
 
 INSERT INTO Subscriptions(seriesID, customerID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="How I Met Your Father"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="How I Met Your Father"),
           (SELECT customerID FROM Customers WHERE lastName="Doe")
       );
 
 INSERT INTO Subscriptions(seriesID, customerID)
 VALUES(
-          (SELECT seriesID FROM Series WHERE title="The Witcher"),
+          (SELECT seriesID FROM Series WHERE seriesTitle="The Witcher"),
           (SELECT customerID FROM Customers WHERE lastName="Halpert")
       );
